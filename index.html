@@ -270,7 +270,7 @@ const SHEET = {
   editUrl: 'https://docs.google.com/spreadsheets/d/1sM0GIPORgPaD2YQXQKGKeXGow6EfnHvQMVZY_2TmXyM/edit',
   csvUrl: 'https://docs.google.com/spreadsheets/d/1sM0GIPORgPaD2YQXQKGKeXGow6EfnHvQMVZY_2TmXyM/export?format=csv&gid=1672785871',
   // JSONP/GET Apps Script middleware for two-way sync (set after deploy)
-  syncUrl: localStorage.getItem('wb-sync-url') || 'REPLACE_APPS_SCRIPT_URL'
+  syncUrl: localStorage.getItem('wb-sync-url') || 'https://script.google.com/macros/s/AKfycbzZiwFbO5R5UTOay_rX_wR7h_O_-ODnBjgNEpTspsPPVZgQH6fzZVBNKCdWET8Zbks/exec'
 };
 const PHASES = TRIP_DATA.meta.phases;
 const KIND_LABEL = {
@@ -300,6 +300,15 @@ function saveState() {
   updateStats();
 }
 
+let _pushTimer = null;
+let _pushBusy = false;
+function schedulePushToSheet() {
+  if (!SHEET.syncUrl || SHEET.syncUrl.includes('REPLACE_')) return;
+  clearTimeout(_pushTimer);
+  _pushTimer = setTimeout(() => { pushToSheet({ silent: true }); }, 1200);
+}
+
+
 let state = loadState();
 let filterPhase = 'all';
 
@@ -320,6 +329,7 @@ function setBranchStatus(date, code, status) {
   if (status !== 'skipped') next.skipReason = '';
   state.branches[k] = next;
   saveState();
+  schedulePushToSheet();
   return next;
 }
 
@@ -335,6 +345,7 @@ function setSkipReason(date, code, reason) {
   const cur = getBranchState(date, code);
   state.branches[k] = { ...cur, skipReason: reason, notes: cur.notes || reason, updated_at: new Date().toISOString() };
   saveState();
+  schedulePushToSheet();
 }
 
 function toast(msg) {
@@ -763,18 +774,20 @@ function buildStatusPayload() {
   return rows;
 }
 
-async function pushToSheet() {
-  toast('Pushing to Sheet…');
+async function pushToSheet(opts) {
+  opts = opts || {};
+  const silent = !!opts.silent;
+  if (_pushBusy) { if (!silent) toast('Push already running…'); return; }
+  if (!silent) toast('Pushing to Sheet…');
   try {
     if (!SHEET.syncUrl || SHEET.syncUrl.includes('REPLACE_')) {
-      // No Apps Script yet — fall back to CSV download for manual import
+      if (silent) return;
       downloadCsv();
       toast('Sync bridge not live yet — downloaded CSV to paste into Sheet');
       return;
     }
+    _pushBusy = true;
     const rows = buildStatusPayload();
-    const payload = encodeURIComponent(JSON.stringify({ rows: rows }));
-    // Apps Script GET with action=set (JSONP); keep under URL length by chunking
     const chunkSize = 25;
     let done = 0;
     for (let i = 0; i < rows.length; i += chunkSize) {
@@ -782,12 +795,14 @@ async function pushToSheet() {
       const q = 'action=set&rows=' + encodeURIComponent(JSON.stringify(chunk));
       const data = await jsonp(SHEET.syncUrl + (SHEET.syncUrl.includes('?')?'&':'?') + q, 30000);
       if (!data || data.ok === false) throw new Error((data && data.error) || 'Push failed');
-      done += chunk.length;
-      toast('Pushed ' + done + '/' + rows.length);
+      done += (data.updated != null ? data.updated : chunk.length);
+      if (!silent) toast('Pushed ' + done + '/' + rows.length);
     }
-    toast('Sheet updated (' + rows.length + ' rows)');
+    toast(silent ? 'Sheet synced' : ('Sheet updated (' + rows.length + ' rows)'));
   } catch (err) {
     toast(String(err.message || err));
+  } finally {
+    _pushBusy = false;
   }
 }
 
@@ -822,7 +837,7 @@ renderChips();
 renderDays();
 updateStats();
 const boot = document.getElementById('bootNote');
-if (boot) boot.innerHTML = 'Ticks here stay on this phone. Prefer updating the <a href="https://docs.google.com/spreadsheets/d/1sM0GIPORgPaD2YQXQKGKeXGow6EfnHvQMVZY_2TmXyM/edit" target="_blank" rel="noopener">live status Sheet</a> so the planner can reshape the trip.';
+if (boot) boot.innerHTML = 'Tick visits here — the live Sheet updates automatically. Planner reads the Sheet to reshape the trip.';
 // Auto-open today
 setTimeout(jumpToday, 100);
 </script>
