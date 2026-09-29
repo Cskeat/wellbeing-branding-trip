@@ -1,0 +1,830 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+<meta name="color-scheme" content="dark light"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<title>Wellbeing Branding Trip</title>
+<style>
+:root {
+  --bg: #0f1218;
+  --surface: #1a1f2a;
+  --surface2: #242b38;
+  --border: #2e3648;
+  --text: #e8ecf4;
+  --muted: #9aa3b5;
+  --accent: #5b9fff;
+  --done: #3ecf8e;
+  --skip: #f0a060;
+  --pending: #6b7385;
+  --today: #5b9fff;
+  --blocked: #7a8499;
+  --danger: #ff6b7a;
+  --radius: 14px;
+  --tap: 48px;
+  --safe-b: env(safe-area-inset-bottom, 0px);
+}
+@media (prefers-color-scheme: light) {
+  :root {
+    --bg: #f4f6fa;
+    --surface: #ffffff;
+    --surface2: #eef1f7;
+    --border: #d5dae6;
+    --text: #1a1f2a;
+    --muted: #5c6578;
+    --accent: #2b6de0;
+    --done: #1a9f63;
+    --skip: #c46a20;
+    --pending: #7a8499;
+    --today: #2b6de0;
+    --blocked: #6b7385;
+    --danger: #d63b4d;
+  }
+}
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html, body { margin: 0; padding: 0; background: var(--bg); color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  font-size: 16px; line-height: 1.4; }
+body { padding-bottom: calc(88px + var(--safe-b)); }
+a { color: var(--accent); }
+
+.top {
+  position: sticky; top: 0; z-index: 40;
+  background: color-mix(in srgb, var(--bg) 92%, transparent);
+  backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+  padding: 12px 14px 10px;
+}
+.top h1 { margin: 0; font-size: 1.15rem; font-weight: 700; letter-spacing: -0.02em; }
+.top .sub { color: var(--muted); font-size: 0.78rem; margin-top: 2px; }
+.stats { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+.stat {
+  background: var(--surface2); border-radius: 999px; padding: 4px 10px;
+  font-size: 0.75rem; color: var(--muted); font-weight: 600;
+}
+.stat b { color: var(--text); }
+.stat.done b { color: var(--done); }
+.stat.skip b { color: var(--skip); }
+
+.chips {
+  display: flex; gap: 8px; overflow-x: auto; padding: 10px 14px 4px;
+  -webkit-overflow-scrolling: touch; scrollbar-width: none;
+}
+.chips::-webkit-scrollbar { display: none; }
+.chip {
+  flex: 0 0 auto; min-height: 36px; padding: 6px 14px; border-radius: 999px;
+  border: 1px solid var(--border); background: var(--surface);
+  color: var(--muted); font-size: 0.82rem; font-weight: 600; cursor: pointer;
+}
+.chip.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+main { padding: 8px 12px 24px; max-width: 640px; margin: 0 auto; }
+
+.day {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); margin-bottom: 12px; overflow: hidden;
+}
+.day.today { border-color: var(--today); box-shadow: 0 0 0 2px color-mix(in srgb, var(--today) 35%, transparent); }
+.day-head {
+  padding: 14px 14px 10px; cursor: pointer; user-select: none;
+  display: grid; grid-template-columns: 1fr auto; gap: 8px; align-items: start;
+}
+.day-head .label { font-size: 0.75rem; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; }
+.day-head .title { font-size: 1.02rem; font-weight: 700; margin-top: 2px; }
+.day-head .badge {
+  font-size: 0.7rem; font-weight: 700; padding: 4px 8px; border-radius: 8px;
+  background: var(--surface2); color: var(--muted); white-space: nowrap;
+}
+.day.today .badge.today-badge { background: var(--today); color: #fff; }
+.day.kind-blocked .badge, .day.kind-clear .badge { background: #3a3340; color: #d0c4d8; }
+.day.kind-travel .badge { background: #2a3548; color: #9ec0ff; }
+.day.kind-arrive .badge, .day.kind-depart .badge, .day.kind-prep .badge { background: var(--surface2); }
+
+.day-body { padding: 0 14px 14px; display: none; }
+.day.open .day-body { display: block; }
+.day-note-plan { color: var(--muted); font-size: 0.88rem; margin: 0 0 10px; }
+.day-notes-wrap label, .branch-notes-wrap label {
+  display: block; font-size: 0.72rem; color: var(--muted); font-weight: 600;
+  margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.03em;
+}
+textarea {
+  width: 100%; min-height: 64px; resize: vertical;
+  background: var(--surface2); color: var(--text); border: 1px solid var(--border);
+  border-radius: 10px; padding: 10px 12px; font: inherit; font-size: 0.95rem;
+}
+textarea:focus { outline: 2px solid color-mix(in srgb, var(--accent) 50%, transparent); border-color: var(--accent); }
+
+.branch {
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 12px; padding: 12px; margin-top: 10px;
+}
+.branch.status-done { border-color: color-mix(in srgb, var(--done) 55%, var(--border)); }
+.branch.status-skipped { border-color: color-mix(in srgb, var(--skip) 55%, var(--border)); opacity: 0.92; }
+.branch-top { display: flex; justify-content: space-between; gap: 8px; align-items: flex-start; }
+.branch-code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.78rem; font-weight: 700; color: var(--accent);
+}
+.branch-name { font-weight: 700; margin-top: 2px; }
+.branch-addr { color: var(--muted); font-size: 0.85rem; margin-top: 4px; }
+.status-pill {
+  font-size: 0.7rem; font-weight: 700; text-transform: uppercase;
+  padding: 4px 8px; border-radius: 8px; background: var(--bg); color: var(--pending);
+}
+.branch.status-done .status-pill { color: var(--done); }
+.branch.status-skipped .status-pill { color: var(--skip); }
+
+.btns { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-top: 12px; }
+.btn {
+  min-height: var(--tap); border-radius: 12px; border: 1px solid var(--border);
+  background: var(--surface); color: var(--text); font-weight: 700; font-size: 0.88rem;
+  cursor: pointer; padding: 8px;
+}
+.btn:active { transform: scale(0.98); }
+.btn.done { border-color: var(--done); color: var(--done); }
+.btn.skip { border-color: var(--skip); color: var(--skip); }
+.btn.pend { border-color: var(--pending); color: var(--muted); }
+.btn.active.done { background: var(--done); color: #062; border-color: var(--done); }
+.btn.active.skip { background: var(--skip); color: #3a1a00; border-color: var(--skip); }
+.btn.active.pend { background: var(--pending); color: #fff; }
+.branch-notes-wrap { margin-top: 10px; }
+.skip-reason { margin-top: 8px; display: none; }
+.skip-reason.show { display: block; }
+.skip-reason input {
+  width: 100%; min-height: 44px; border-radius: 10px; border: 1px solid var(--border);
+  background: var(--bg); color: var(--text); padding: 10px 12px; font: inherit;
+}
+
+.dock {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 50;
+  background: color-mix(in srgb, var(--bg) 94%, transparent);
+  backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+  border-top: 1px solid var(--border);
+  padding: 10px 12px calc(10px + var(--safe-b));
+  display: grid; grid-template-columns: 1fr 1fr; gap: 8px; max-width: 640px; margin: 0 auto;
+}
+.dock .btn-primary, .dock .btn-secondary {
+  min-height: var(--tap); border-radius: 14px; font-weight: 700; font-size: 0.9rem;
+  border: none; cursor: pointer;
+}
+.btn-primary { background: var(--accent); color: #fff; grid-column: 1 / -1; }
+.btn-secondary { background: var(--surface2); color: var(--text); border: 1px solid var(--border) !important; }
+.toast {
+  position: fixed; left: 50%; bottom: calc(90px + var(--safe-b)); transform: translateX(-50%);
+  background: var(--text); color: var(--bg); padding: 10px 16px; border-radius: 999px;
+  font-size: 0.85rem; font-weight: 600; opacity: 0; pointer-events: none; transition: opacity .2s;
+  z-index: 60; white-space: nowrap; max-width: 90vw; overflow: hidden; text-overflow: ellipsis;
+}
+.toast.show { opacity: 1; }
+
+.modal-bg {
+  position: fixed; inset: 0; background: rgba(0,0,0,.55); z-index: 70;
+  display: none; align-items: flex-end; justify-content: center;
+}
+.modal-bg.show { display: flex; }
+.modal {
+  background: var(--surface); border-radius: 18px 18px 0 0; width: 100%; max-width: 640px;
+  padding: 18px 16px calc(18px + var(--safe-b)); border: 1px solid var(--border);
+}
+.modal h2 { margin: 0 0 8px; font-size: 1.1rem; }
+.modal p { margin: 0 0 14px; color: var(--muted); font-size: 0.9rem; }
+.modal .row { display: grid; gap: 8px; }
+.modal .btn { width: 100%; }
+.hidden { display: none !important; }
+.boot-note {
+  margin: 12px 14px; padding: 12px 14px; border-radius: var(--radius);
+  background: var(--surface); border: 1px solid var(--border);
+  font-size: 0.9rem; color: var(--muted);
+}
+.boot-note a { font-weight: 600; }
+.sheet-bar {
+  display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px;
+}
+.sheet-bar a.btn-link {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-height: 40px; padding: 8px 14px; border-radius: 999px;
+  background: var(--surface2); border: 1px solid var(--border);
+  color: var(--accent); text-decoration: none; font-size: 0.82rem; font-weight: 600;
+}
+.empty-day {
+  color: var(--muted); font-size: 0.9rem; padding: 8px 0; font-style: italic;
+}
+</style>
+</head>
+<body>
+<noscript>
+  <div style="padding:16px;font-family:sans-serif">This trip app needs JavaScript. If you opened it inside Google Drive, download the HTML file and open it in Safari or Chrome instead.</div>
+</noscript>
+<div class="top">
+  <h1>Wellbeing Branding Trip</h1>
+  <div class="sub" id="metaSub"></div>
+  <div class="sheet-bar">
+    <a class="btn-link" href="https://docs.google.com/spreadsheets/d/1sM0GIPORgPaD2YQXQKGKeXGow6EfnHvQMVZY_2TmXyM/edit" target="_blank" rel="noopener">Open live status Sheet</a>
+  </div>
+  <div class="stats">
+    <div class="stat done">Done <b id="nDone">0</b></div>
+    <div class="stat skip">Skipped <b id="nSkip">0</b></div>
+    <div class="stat">Pending <b id="nPend">0</b></div>
+    <div class="stat">Sites <b id="nTotal">0</b></div>
+  </div>
+</div>
+<div class="chips" id="phaseChips"></div>
+<div class="boot-note" id="bootNote">
+  <b style="color:var(--text)">How to open:</b> Google Drive preview stays blank (it blocks HTML apps).
+  Download this file, then open it in Safari or Chrome. Progress stays on this phone.
+  Tick status in the <a href="https://docs.google.com/spreadsheets/d/1sM0GIPORgPaD2YQXQKGKeXGow6EfnHvQMVZY_2TmXyM/edit" target="_blank" rel="noopener">live Sheet</a> so the planner can reshuffle.
+</div>
+<main id="days"></main>
+
+<div class="dock">
+  <button class="btn-primary" id="btnPullSheet" type="button">Pull from Sheet</button>
+  <button class="btn-secondary" id="btnPushSheet" type="button">Push to Sheet</button>
+  <button class="btn-secondary" id="btnJumpToday" type="button">Jump to today</button>
+  <button class="btn-secondary" id="btnMore" type="button">More…</button>
+</div>
+<div class="toast" id="toast"></div>
+
+<div class="modal-bg" id="moreModal">
+  <div class="modal">
+    <h2>Sync &amp; tools</h2>
+    <p>Progress saves on this phone only. The planner reads the <a href="https://docs.google.com/spreadsheets/d/1sM0GIPORgPaD2YQXQKGKeXGow6EfnHvQMVZY_2TmXyM/edit" target="_blank" rel="noopener">live status Sheet</a> — update that Sheet on your phone (preferred), or download CSV below and import.</p>
+    <div class="row">
+      <a class="btn" href="https://docs.google.com/spreadsheets/d/1sM0GIPORgPaD2YQXQKGKeXGow6EfnHvQMVZY_2TmXyM/edit" target="_blank" rel="noopener" style="display:flex;align-items:center;justify-content:center;text-decoration:none;color:var(--accent)">Open live status Sheet</a>
+      <button class="btn" id="btnExportSheet" type="button">Download status CSV</button>
+      <button class="btn" id="btnCopyText" type="button">Copy plain-text update</button>
+      <button class="btn" id="btnImportCsv" type="button">Import status CSV…</button>
+      <input type="file" id="fileImport" accept=".csv,text/csv" class="hidden"/>
+      <button class="btn" id="btnReset" type="button" style="color:var(--danger)">Reset all progress</button>
+      <button class="btn" id="btnCloseMore" type="button">Close</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const TRIP_DATA = {"meta":{"title":"Wellbeing Branding Trip","travellers":["Yin Hao Lui (Hugo)","Yi Hui Chee"],"host":"Soon Keat Chan","flights":{"arrive":"MH4 LHR T4 Tue 29 Sep 2026 16:35","depart":"MH3 LHR T4 Wed 28 Oct 2026 10:25","pnr":"D6JQVW"},"phases":[{"id":"hampshire","label":"Hampshire","range":"29 Sep – 6 Oct"},{"id":"midlands","label":"Midlands","range":"7 – 11 Oct"},{"id":"devon","label":"Devon","range":"12 – 16 Oct"},{"id":"east-anglia","label":"East Anglia","range":"17 – 25 Oct"},{"id":"exit","label":"Exit","range":"26 – 28 Oct"}],"excluded":[{"code":"WP059","name":"Staploe","reason":"Not ready yet"},{"code":"AP001","name":"Poole","reason":"Out of branding scope"}],"hub":"Coventry 8 Prior Deram Walk (overnight base only, not a visit)","coverage":{"sites":62,"wp":59,"automeds":3}},"days":[{"id":"2026-09-29","date":"2026-09-29","dow":"Tue","label":"Tue 29 Sep","title":"Arrive LHR → Stockbridge","phase":"hampshire","kind":"arrive","notes":"MH4 land LHR T4 16:35 → meal → drive to Stockbridge (~1.5–2h). Settle at Stockbridge. No branch visits this evening.","branches":[]},{"id":"2026-09-30","date":"2026-09-30","dow":"Wed","label":"Wed 30 Sep","title":"Stockbridge / Winchester / Whitchurch","phase":"hampshire","kind":"visit","notes":"Local Stockbridge cluster. Overnight Stockbridge. Plan WP014 around lunch break 1–2PM.","branches":[{"code":"WP014","name":"Stockbridge","address":"High St, Stockbridge SO20 6EX","pc":"SO20 6EX"},{"code":"WP035","name":"Winchester","address":"155 High St, Winchester SO23 9BA","pc":"SO23 9BA"},{"code":"WP026","name":"Whitchurch","address":"7 Newbury St, Whitchurch RG28 7DW","pc":"RG28 7DW"}]},{"id":"2026-10-01","date":"2026-10-01","dow":"Thu","label":"Thu 1 Oct","title":"Alton / Hartley Wintney / Fleet Linkway","phase":"hampshire","kind":"visit","notes":"NE Hants weekday cluster. WP006 Fleet Richmond Surgery reserved for Sun 4 Oct only. Overnight Stockbridge / Fleet area.","branches":[{"code":"WP022","name":"Alton","address":"68 High Street, Alton GU34 1ET","pc":"GU34 1ET"},{"code":"WP036","name":"Hartley Wintney","address":"74 High St, Hartley Wintney, Hook RG27 8NS","pc":"RG27 8NS"},{"code":"WP042","name":"Wellbeing + Fleet","address":"5 Linkway Parade, Fleet GU52 7UL","pc":"GU52 7UL"}]},{"id":"2026-10-02","date":"2026-10-02","dow":"Fri","label":"Fri 2 Oct","title":"Dorset Automeds + Sturminster","phase":"hampshire","kind":"visit","notes":"Weekday required for AP003/AP004 and WP005 (all Sat OFF). Westbound: Ringwood → Sturminster → Dorchester. Overnight Stockbridge / return south.","branches":[{"code":"AP003","name":"Ringwood","address":"Unit 2 Hoburne Enterprise Park, Embankment Way, Ringwood, Hampshire BH24 1WL","pc":"BH24 1WL"},{"code":"WP005","name":"Sturminster Marshall","address":"66 High Street, Sturminster Marshall, Wimborne, Dorset BH21 4AY","pc":"BH21 4AY"},{"code":"AP004","name":"Dorchester","address":"Unit 52F, Enterprise Park, Piddlehinton, Dorchester DT2 7UA","pc":"DT2 7UA"}]},{"id":"2026-10-03","date":"2026-10-03","dow":"Sat","label":"Sat 3 Oct","title":"Blackfield + Surrey edge","phase":"hampshire","kind":"visit","notes":"New Forest then Surrey hop; evening toward Fleet ready for Sunday WP006. Overnight Fleet / Stockbridge.","branches":[{"code":"WP030","name":"Blackfield","address":"191 Hampton Lane, Blackfield, Southampton, Hampshire, SO45 1XA","pc":"SO45 1XA"},{"code":"WP024","name":"Shottermill","address":"5-7 Junction Place, Shottermill, Haslemere, Surrey GU27 1LE","pc":"GU27 1LE"},{"code":"WP055","name":"Chiddingfold","address":"The Green, Chiddingfold, Godalming GU8 4TU","pc":"GU8 4TU"}]},{"id":"2026-10-04","date":"2026-10-04","dow":"Sun","label":"Sun 4 Oct","title":"WP006 Fleet (stay south)","phase":"hampshire","kind":"visit","notes":"WP006 only appearance. Sunday hours 10AM–5PM. Do not drive Midlands tonight — Hampshire phase continues. Overnight Stockbridge / Fleet.","branches":[{"code":"WP006","name":"Fleet","address":"The Richmond Surgery, Richmond Close, Fleet, Hampshire GU52 7US","pc":"GU52 7US"}]},{"id":"2026-10-05","date":"2026-10-05","dow":"Mon","label":"Mon 5 Oct","title":"Gosport Automeds + Sherborne","phase":"hampshire","kind":"visit","notes":"Two-stop day. Morning Solent Automeds, afternoon west to Sherborne (~1.5–1.75h). Overnight Stockbridge or Sherborne area ready for Oxford Tue.","branches":[{"code":"AP002","name":"Gosport","address":"Albion A6, Daedalus park, Daedalus drive, Lee-on-the-Solent, Hampshire PO13 9FX","pc":"PO13 9FX"},{"code":"WP058","name":"Sherborne","address":"77 Cheap St, Sherborne DT9 3BA","pc":"DT9 3BA"}]},{"id":"2026-10-06","date":"2026-10-06","dow":"Tue","label":"Tue 6 Oct","title":"Oxford corridor → drive Coventry","phase":"hampshire","kind":"visit","notes":"Stockbridge → Oxford ~1h. After visits: evening drive Oxford → Coventry (~1–1.25h). Overnight Coventry HUB (base only).","branches":[{"code":"WP020","name":"Oxford","address":"190 Abingdon Rd, Oxford OX1 4RA","pc":"OX1 4RA"},{"code":"WP028","name":"Abingdon","address":"7 Peachcroft Centre, Abingdon, Oxfordshire, OX14 2QA","pc":"OX14 2QA"}]},{"id":"2026-10-07","date":"2026-10-07","dow":"Wed","label":"Wed 7 Oct","title":"Coventry + Market Harborough + Sharnbrook","phase":"midlands","kind":"visit","notes":"4-stop Midlands day. Route: Tile Hill pair → Market Harborough (~45 min) → Sharnbrook (~55 min) → return Coventry (~1h). Overnight Coventry.","branches":[{"code":"WP003","name":"Coventry","address":"298 Tile Hill Lane, Coventry, West Midlands CV4 9DR","pc":"CV4 9DR"},{"code":"WP016","name":"Tile Hill","address":"343 Tile Hill Ln, Coventry CV4 9DU","pc":"CV4 9DU"},{"code":"WP065","name":"Market Harborough","address":"9 Coventry Rd, Market Harborough LE16 9BX","pc":"LE16 9BX"},{"code":"WP001","name":"Sharnbrook","address":"61A High Street, Sharnbrook, Bedfordshire MK44 1PB","pc":"MK44 1PB"}]},{"id":"2026-10-08","date":"2026-10-08","dow":"Thu","label":"Thu 8 Oct","title":"Alfreton / Somercotes / Keyworth","phase":"midlands","kind":"visit","notes":"Derbys / Notts loop; return Coventry overnight.","branches":[{"code":"WP007","name":"Alfreton","address":"Greenhill Prim Care Ctr, Riddings, Derbyshire DE55 1LU","pc":"DE55 1LU"},{"code":"WP050","name":"Somercotes","address":"40 Nottingham Rd, Somercotes, Alfreton DE55 4JJ","pc":"DE55 4JJ"},{"code":"WP063","name":"Keyworth","address":"2 The Square, Keyworth, Nottingham NG12 5JT","pc":"NG12 5JT"}]},{"id":"2026-10-09","date":"2026-10-09","dow":"Fri","label":"Fri 9 Oct","title":"Birmingham B6 cluster (Roots / Medichem / Villa)","phase":"midlands","kind":"visit","notes":"All three B6 sites adjacent (~30–40 min from Coventry). Weekday hours (all Sat OFF). Overnight Coventry / Birmingham ready for board weekend.","branches":[{"code":"WP011","name":"Roots","address":"168 Trinity Rd, Birmingham B6 6HL / B6 6HZ","pc":"B6 6HZ"},{"code":"WP012","name":"Medichem","address":"51 Prestbury Rd, Birmingham B6 6EH","pc":"B6 6EH"},{"code":"WP013","name":"Villa","address":"66 Victoria Road, Birmingham B6 5HA","pc":"B6 5HA"}]},{"id":"2026-10-10","date":"2026-10-10","dow":"Sat","label":"Sat 10 Oct","title":"Wellbeing Annual Board Meeting only","phase":"midlands","kind":"blocked","blockReason":"Board meeting — no branch visits","notes":"Wellbeing Annual Board Meeting (Head Office). No branch visits. WP011/012/013 already done Fri 9. Overnight Coventry / Birmingham.","branches":[]},{"id":"2026-10-11","date":"2026-10-11","dow":"Sun","label":"Sun 11 Oct","title":"Pharmacy Show (NEC Birmingham) only","phase":"midlands","kind":"blocked","blockReason":"Pharmacy Show NEC — no branch visits","notes":"Take branding team as observers at Pharmacy Show NEC. No branch visits. Overnight Coventry / Birmingham.","branches":[]},{"id":"2026-10-12","date":"2026-10-12","dow":"Mon","label":"Mon 12 Oct","title":"Travel Midlands → East Devon","phase":"devon","kind":"visit","notes":"Coventry → Exeter via M5 (~3.5–4h). Afternoon after check-in: Cranbrook.","branches":[{"code":"WP049","name":"Cranbrook","address":"151 Younghayes Road, Cranbrook EX5 7DR","pc":"EX5 7DR"}]},{"id":"2026-10-13","date":"2026-10-13","dow":"Tue","label":"Tue 13 Oct","title":"Exe / Teign cluster","phase":"devon","kind":"visit","notes":"Exmouth pair + Bishopsteignton.","branches":[{"code":"WP018","name":"Exmouth","address":"95 Exeter Rd, Exmouth EX8 1QD","pc":"EX8 1QD"},{"code":"WP032","name":"Withycombe Village Rd","address":"120 Withycombe Village Rd, Exmouth EX8 3AN","pc":"EX8 3AN"},{"code":"WP021","name":"Bishopsteignton","address":"50 Fore St, Bishopsteignton, Teignmouth TQ14 9QZ","pc":"TQ14 9QZ"}]},{"id":"2026-10-14","date":"2026-10-14","dow":"Wed","label":"Wed 14 Oct","title":"Teignmouth / Dartmouth","phase":"devon","kind":"visit","notes":"Teignmouth then Dartmouth pair.","branches":[{"code":"WP039","name":"Teignmouth","address":"4 Den Rd, Teignmouth TQ14 8AJ","pc":"TQ14 8AJ"},{"code":"WP031","name":"Dartmouth","address":"31 Victoria Road, Dartmouth, Devon, TQ6 9RT","pc":"TQ6 9RT"},{"code":"WP033","name":"Dartmouth Medical Center","address":"Dartmouth Health & Wellbeing Centre, Wessex Way, Dartmouth, Devon TQ6 0JL","pc":"TQ6 0JL"}]},{"id":"2026-10-15","date":"2026-10-15","dow":"Thu","label":"Thu 15 Oct","title":"Kingsbridge / Plymouth","phase":"devon","kind":"visit","notes":"South Devon pair.","branches":[{"code":"WP052","name":"Kingsbridge","address":"The Quay, Kingsbridge TQ7 1EB","pc":"TQ7 1EB"},{"code":"WP053","name":"Plymouth","address":"97 King St, Stonehouse, Plymouth PL1 5JA","pc":"PL1 5JA"}]},{"id":"2026-10-16","date":"2026-10-16","dow":"Fri","label":"Fri 16 Oct","title":"Travel only: Devon → Ipswich","phase":"devon","kind":"travel","notes":"Exeter / Plymouth to Ipswich full transfer day (~5–6h). No branch visits. Leave Devon morning; overnight Ipswich.","branches":[]},{"id":"2026-10-17","date":"2026-10-17","dow":"Sat","label":"Sat 17 Oct","title":"East Suffolk sat-open loop","phase":"east-anglia","kind":"visit","notes":"Overnight Ipswich after Friday drive-only transfer. WP061 Debenham Sat to ~1PM — morning.","branches":[{"code":"WP008","name":"Cox Lane","address":"Wellbeing Pharmacy, 8 Cox Lane, Ipswich IP4 1HT","pc":"IP4 1HT"},{"code":"WP056","name":"Framlingham","address":"32 Market Hill, Framlingham, Woodbridge IP13 9AY","pc":"IP13 9AY"},{"code":"WP061","name":"Debenham","address":"Wellbeing Pharmacy, 1 Little Back Ln, Debenham, Stowmarket IP14 6RB","pc":"IP14 6RB"}]},{"id":"2026-10-18","date":"2026-10-18","dow":"Sun","label":"Sun 18 Oct","title":"Littleport (Sunday-open)","phase":"east-anglia","kind":"visit","notes":"Most EA pharmacies Sunday OFF. Overnight Ely / Littleport.","branches":[{"code":"WP010","name":"Littleport","address":"Wellbeing Pharmacy, 2 Parsons Lane, Littleport CB6 1JU","pc":"CB6 1JU"}]},{"id":"2026-10-19","date":"2026-10-19","dow":"Mon","label":"Mon 19 Oct","title":"Ely / Littleport / Dereham / Soham","phase":"east-anglia","kind":"visit","notes":"Finish Cambs-east cluster after Sunday Littleport. WP037 Dereham Sat to ~1PM — prefer weekday morning.","branches":[{"code":"WP027","name":"St. Georges Pharmacy","address":"St. Georges Pharmacy, Parsons Lane, Littleport, Cambridgeshire, CB6 1JU","pc":"CB6 1JU"},{"code":"WP025","name":"Ely Princess of Wales Hospital","address":"Wellbeing Pharmacy, Princess Of Wales Hospital, Lynn Road, Ely CB6 1DN","pc":"CB6 1DN"},{"code":"WP037","name":"Dereham","address":"Wellbeing Pharmacy, 2 Chapel Ln, Toftwood, Dereham NR19 1LD","pc":"NR19 1LD"},{"code":"WP034","name":"Soham","address":"Wellbeing Pharmacy, 31 High St, Soham, Mere, Ely CB7 5HA","pc":"CB7 5HA"}]},{"id":"2026-10-20","date":"2026-10-20","dow":"Tue","label":"Tue 20 Oct","title":"Cambs west day-trip","phase":"east-anglia","kind":"visit","notes":"From Ipswich: St Neots / Huntingdon / Chatteris. Overnight Ipswich.","branches":[{"code":"WP047","name":"St Neots","address":"Wellbeing Pharmacy, 14 Huntingdon St, St Neots PE19 1BQ","pc":"PE19 1BQ"},{"code":"WP038","name":"Huntingdon","address":"Wellbeing Pharmacy, 72a Ermine St, Huntingdon PE29 3EZ","pc":"PE29 3EZ"},{"code":"WP040","name":"Chatteris","address":"Wellbeing Pharmacy, George Clare Surgery, Swan Dr, Chatteris PE16 6EX","pc":"PE16 6EX"}]},{"id":"2026-10-21","date":"2026-10-21","dow":"Wed","label":"Wed 21 Oct","title":"Ipswich urban","phase":"east-anglia","kind":"visit","notes":"4-stop Ipswich urban (adjacent sites).","branches":[{"code":"WP004","name":"Ipswich Chesterfield Drive","address":"Wellbeing Pharmacy, 29 Chesterfield Drive, Ipswich, Suffolk IP1 6DW","pc":"IP1 6DW"},{"code":"WP019","name":"Ipswich Reynolds Rd","address":"Wellbeing Pharmacy, 13 Reynolds Rd, Ipswich IP3 0JL","pc":"IP3 0JL"},{"code":"WP041","name":"Kesgrave","address":"Wellbeing Pharmacy, 34A Penzance Rd, Kesgrave, Ipswich IP5 1JS","pc":"IP5 1JS"},{"code":"WP043","name":"Ipswich Orchard St","address":"Wellbeing Pharmacy, Orchard St Medical Centre, Orchard Street, Ipswich IP4 2PU","pc":"IP4 2PU"}]},{"id":"2026-10-22","date":"2026-10-22","dow":"Thu","label":"Thu 22 Oct","title":"Ipswich west + Eye / Diss / Norwich","phase":"east-anglia","kind":"visit","notes":"WP060 Eye Sat to ~1PM — morning preferred.","branches":[{"code":"WP048","name":"Ipswich Norwich Rd","address":"Wellbeing Pharmacy, 416 Norwich Road, Ipswich IP1 5DX","pc":"IP1 5DX"},{"code":"WP060","name":"Eye","address":"Wellbeing Pharmacy, 5 Broad St, Eye IP23 7AF","pc":"IP23 7AF"},{"code":"WP046","name":"Diss","address":"Wellbeing Pharmacy, 11 Market Place, Diss IP22 4AB","pc":"IP22 4AB"},{"code":"WP029","name":"Oak Street","address":"Wellbeing Pharmacy, 2 Mandela Close, Oak Street, Norwich, Norfolk, NR3 3BA","pc":"NR3 3BA"}]},{"id":"2026-10-23","date":"2026-10-23","dow":"Fri","label":"Fri 23 Oct","title":"Norwich + Broads / Yarmouth","phase":"east-anglia","kind":"visit","notes":"WP051 Norwich Noble Cl Sat to ~1PM — morning preferred.","branches":[{"code":"WP051","name":"Norwich Noble Cl","address":"29 Noble Cl, Norwich NR7 9RJ","pc":"NR7 9RJ"},{"code":"WP015","name":"Wroxham","address":"Wellbeing Pharmacy, Station Rd, Hoveton, Norwich NR12 8UR","pc":"NR12 8UR"},{"code":"WP045","name":"Coltishall","address":"Wellbeing Pharmacy, 30 High St, Coltishall, Norwich NR12 7AA","pc":"NR12 7AA"},{"code":"WP017","name":"Belton","address":"Wellbeing Pharmacy, 19-21 Station Rd N, Belton, Great Yarmouth NR31 9NF","pc":"NR31 9NF"},{"code":"WP023","name":"Caister-on-Sea","address":"Wellbeing Pharmacy, 44 West Rd, Caister-on-Sea, Great Yarmouth NR30 5AQ","pc":"NR30 5AQ"}]},{"id":"2026-10-24","date":"2026-10-24","dow":"Sat","label":"Sat 24 Oct","title":"London: Romford + Southfields","phase":"east-anglia","kind":"visit","notes":"From Ipswich day-trip (or overnight London). Both open Saturday. Not on 26–27 Oct. WP009 Romford Sat to ~1PM — morning. Return Ipswich evening. Overnight Ipswich.","branches":[{"code":"WP009","name":"Romford","address":"Wellbeing Pharmacy, 1207 High Road, Chadwell Heath, Romford,Essex RM6 4AL","pc":"RM6 4AL"},{"code":"WP002","name":"Southfields","address":"Wellbeing Pharmacy, 13 Replingham Road, Southfields, London SW18 5LT","pc":"SW18 5LT"}]},{"id":"2026-10-25","date":"2026-10-25","dow":"Sun","label":"Sun 25 Oct","title":"Proposal prep + read-out (Ipswich)","phase":"east-anglia","kind":"prep","notes":"Deck / territories workshop in the morning; formal branding proposal read-out afternoon/evening in Ipswich. Pharmacies closed Sunday — no branch visits.","branches":[]},{"id":"2026-10-26","date":"2026-10-26","dow":"Mon","label":"Mon 26 Oct","title":"Clear (buffer)","phase":"exit","kind":"clear","blockReason":"Clear day — buffer / rest / pack","notes":"No branches, no read-out. Buffer / rest / pack. Overnight Ipswich (or start easy move toward London if preferred).","branches":[]},{"id":"2026-10-27","date":"2026-10-27","dow":"Tue","label":"Tue 27 Oct","title":"LHR hotel · host flies Malaysia","phase":"exit","kind":"clear","blockReason":"Clear — LHR hotel / host departs","notes":"No branch visits. Ipswich → Heathrow. Host checks Hugo & Yi Hui into LHR airport hotel. Host flies Malaysia this day. Branding team overnight Heathrow hotel.","branches":[]},{"id":"2026-10-28","date":"2026-10-28","dow":"Wed","label":"Wed 28 Oct","title":"Team self-depart","phase":"exit","kind":"depart","notes":"Hotel → LHR T4 on their own. MH3 10:25 LHR → KUL (PNR D6JQVW). Host already in Malaysia. No host.","branches":[]}]};
+
+const STORAGE_KEY = 'wb-branding-trip-v1';
+const SHEET = {
+  id: '1sM0GIPORgPaD2YQXQKGKeXGow6EfnHvQMVZY_2TmXyM',
+  editUrl: 'https://docs.google.com/spreadsheets/d/1sM0GIPORgPaD2YQXQKGKeXGow6EfnHvQMVZY_2TmXyM/edit',
+  csvUrl: 'https://docs.google.com/spreadsheets/d/1sM0GIPORgPaD2YQXQKGKeXGow6EfnHvQMVZY_2TmXyM/export?format=csv&gid=1672785871',
+  // JSONP/GET Apps Script middleware for two-way sync (set after deploy)
+  syncUrl: localStorage.getItem('wb-sync-url') || 'REPLACE_APPS_SCRIPT_URL'
+};
+const PHASES = TRIP_DATA.meta.phases;
+const KIND_LABEL = {
+  visit: 'Visit', arrive: 'Arrive', blocked: 'Blocked', travel: 'Travel',
+  clear: 'Clear', prep: 'Prep', depart: 'Depart'
+};
+
+function todayISO() {
+  const d = new Date();
+  const y = d.getFullYear();
+  const m = String(d.getMonth()+1).padStart(2,'0');
+  const day = String(d.getDate()).padStart(2,'0');
+  return `${y}-${m}-${day}`;
+}
+
+function loadState() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) return JSON.parse(raw);
+  } catch (e) {}
+  return { branches: {}, dayNotes: {}, updatedAt: null };
+}
+
+function saveState() {
+  state.updatedAt = new Date().toISOString();
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  updateStats();
+}
+
+let state = loadState();
+let filterPhase = 'all';
+
+function branchKey(date, code) { return date + '|' + code; }
+
+function getBranchState(date, code) {
+  const k = branchKey(date, code);
+  return state.branches[k] || { status: 'pending', notes: '', skipReason: '', updated_at: '' };
+}
+
+function setBranchStatus(date, code, status) {
+  const k = branchKey(date, code);
+  const cur = getBranchState(date, code);
+  const next = { ...cur, status, updated_at: new Date().toISOString() };
+  if (status === 'skipped' && !next.skipReason && !next.notes) {
+    /* reason prompted separately */
+  }
+  if (status !== 'skipped') next.skipReason = '';
+  state.branches[k] = next;
+  saveState();
+  return next;
+}
+
+function setBranchNotes(date, code, notes) {
+  const k = branchKey(date, code);
+  const cur = getBranchState(date, code);
+  state.branches[k] = { ...cur, notes, updated_at: new Date().toISOString() };
+  saveState();
+}
+
+function setSkipReason(date, code, reason) {
+  const k = branchKey(date, code);
+  const cur = getBranchState(date, code);
+  state.branches[k] = { ...cur, skipReason: reason, notes: cur.notes || reason, updated_at: new Date().toISOString() };
+  saveState();
+}
+
+function toast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(toast._t);
+  toast._t = setTimeout(() => el.classList.remove('show'), 2200);
+}
+
+function updateStats() {
+  let done=0, skip=0, pend=0, total=0;
+  for (const day of TRIP_DATA.days) {
+    for (const b of day.branches) {
+      total++;
+      const st = getBranchState(day.date, b.code).status;
+      if (st === 'done') done++;
+      else if (st === 'skipped') skip++;
+      else pend++;
+    }
+  }
+  document.getElementById('nDone').textContent = done;
+  document.getElementById('nSkip').textContent = skip;
+  document.getElementById('nPend').textContent = pend;
+  document.getElementById('nTotal').textContent = total;
+}
+
+function renderChips() {
+  const wrap = document.getElementById('phaseChips');
+  const items = [{id:'all', label:'All'}].concat(PHASES);
+  wrap.innerHTML = items.map(p =>
+    `<button type="button" class="chip${filterPhase===p.id?' active':''}" data-phase="${p.id}">${p.label}</button>`
+  ).join('');
+  wrap.querySelectorAll('.chip').forEach(btn => {
+    btn.addEventListener('click', () => {
+      filterPhase = btn.dataset.phase;
+      renderChips();
+      renderDays();
+    });
+  });
+}
+
+function renderDays() {
+  const today = todayISO();
+  const root = document.getElementById('days');
+  const days = TRIP_DATA.days.filter(d => filterPhase==='all' || d.phase===filterPhase);
+  root.innerHTML = '';
+  for (const day of days) {
+    const isToday = day.date === today;
+    const openDefault = isToday || (day.kind === 'visit' && day.date >= today && day.date <= today);
+    const el = document.createElement('article');
+    el.className = `day kind-${day.kind}${isToday?' today':''}${isToday?' open':''}`;
+    el.id = 'day-' + day.date;
+    el.dataset.date = day.date;
+
+    const doneN = day.branches.filter(b => getBranchState(day.date,b.code).status==='done').length;
+    const skipN = day.branches.filter(b => getBranchState(day.date,b.code).status==='skipped').length;
+    let badge = KIND_LABEL[day.kind] || day.kind;
+    if (day.branches.length) badge = `${doneN+skipN}/${day.branches.length}`;
+    if (isToday) badge = 'TODAY · ' + badge;
+
+    const dayNote = state.dayNotes[day.date] || '';
+
+    let branchesHtml = '';
+    if (!day.branches.length) {
+      const reason = day.blockReason || '';
+      branchesHtml = `<div class="empty-day">${reason || 'No branch visits this day.'}</div>`;
+    } else {
+      branchesHtml = day.branches.map(b => {
+        const st = getBranchState(day.date, b.code);
+        const skShow = st.status === 'skipped' ? ' show' : '';
+        return `<div class="branch status-${st.status}" data-code="${b.code}">
+          <div class="branch-top">
+            <div>
+              <div class="branch-code">${b.code}</div>
+              <div class="branch-name">${escapeHtml(b.name)}</div>
+              <div class="branch-addr">${escapeHtml(b.address)}</div>
+            </div>
+            <span class="status-pill">${st.status}</span>
+          </div>
+          <div class="btns">
+            <button type="button" class="btn done${st.status==='done'?' active':''}" data-act="done">Done</button>
+            <button type="button" class="btn skip${st.status==='skipped'?' active':''}" data-act="skip">Skip</button>
+            <button type="button" class="btn pend${st.status==='pending'?' active':''}" data-act="pending">Pending</button>
+          </div>
+          <div class="skip-reason${skShow}">
+            <label style="font-size:0.72rem;color:var(--muted);font-weight:600">Skip reason (optional)</label>
+            <input type="text" placeholder="e.g. traffic, closed, didn't make it" value="${escapeAttr(st.skipReason||'')}" data-skip-reason/>
+          </div>
+          <div class="branch-notes-wrap">
+            <label>Branch notes</label>
+            <textarea rows="2" placeholder="didn't make it, traffic, closed…" data-branch-notes>${escapeHtml(st.notes||'')}</textarea>
+          </div>
+        </div>`;
+      }).join('');
+    }
+
+    el.innerHTML = `
+      <div class="day-head">
+        <div>
+          <div class="label">${day.label} · ${day.phase.replace('-',' ')}</div>
+          <div class="title">${escapeHtml(day.title)}</div>
+        </div>
+        <span class="badge${isToday?' today-badge':''}">${badge}</span>
+      </div>
+      <div class="day-body">
+        <p class="day-note-plan">${escapeHtml(day.notes||'')}</p>
+        <div class="day-notes-wrap">
+          <label>Day notes</label>
+          <textarea rows="2" placeholder="Day-level notes…" data-day-notes>${escapeHtml(dayNote)}</textarea>
+        </div>
+        ${branchesHtml}
+      </div>`;
+
+    el.querySelector('.day-head').addEventListener('click', () => el.classList.toggle('open'));
+
+    const dayTa = el.querySelector('[data-day-notes]');
+    dayTa.addEventListener('change', () => { state.dayNotes[day.date] = dayTa.value; saveState(); });
+    dayTa.addEventListener('blur', () => { state.dayNotes[day.date] = dayTa.value; saveState(); });
+
+    el.querySelectorAll('.branch').forEach(br => {
+      const code = br.dataset.code;
+      br.querySelectorAll('[data-act]').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const act = btn.dataset.act;
+          setBranchStatus(day.date, code, act === 'skip' ? 'skipped' : act);
+          if (act === 'skip') {
+            const inp = br.querySelector('[data-skip-reason]');
+            br.querySelector('.skip-reason').classList.add('show');
+            setTimeout(() => inp && inp.focus(), 50);
+          }
+          // re-render just this day section efficiently by full re-render
+          const wasOpen = el.classList.contains('open');
+          renderDays();
+          const neu = document.getElementById('day-' + day.date);
+          if (neu && wasOpen) neu.classList.add('open');
+        });
+      });
+      const notes = br.querySelector('[data-branch-notes]');
+      notes.addEventListener('change', () => setBranchNotes(day.date, code, notes.value));
+      notes.addEventListener('blur', () => setBranchNotes(day.date, code, notes.value));
+      const skipInp = br.querySelector('[data-skip-reason]');
+      if (skipInp) {
+        skipInp.addEventListener('change', () => setSkipReason(day.date, code, skipInp.value));
+        skipInp.addEventListener('blur', () => setSkipReason(day.date, code, skipInp.value));
+      }
+    });
+
+    root.appendChild(el);
+  }
+}
+
+function escapeHtml(s) {
+  return String(s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+function escapeAttr(s) {
+  return escapeHtml(s).replace(/\n/g, ' ');
+}
+
+function buildStatusRows() {
+  const rows = [];
+  for (const day of TRIP_DATA.days) {
+    for (const b of day.branches) {
+      const st = getBranchState(day.date, b.code);
+      const notes = [st.skipReason, st.notes].filter(Boolean).filter((v,i,a)=>a.indexOf(v)===i).join(' | ');
+      rows.push({
+        date: day.date,
+        code: b.code,
+        name: b.name,
+        status: st.status,
+        notes: notes,
+        updated_at: st.updated_at || ''
+      });
+    }
+  }
+  return rows;
+}
+
+function toCsv(rows) {
+  const cols = ['date','code','name','status','notes','updated_at'];
+  const esc = (v) => {
+    const s = String(v??'');
+    if (/[",\n\r]/.test(s)) return '"' + s.replace(/"/g,'""') + '"';
+    return s;
+  };
+  return [cols.join(',')].concat(rows.map(r => cols.map(c => esc(r[c])).join(','))).join('\n');
+}
+
+function downloadCsv() {
+  const csv = toCsv(buildStatusRows());
+  const blob = new Blob([csv], {type:'text/csv;charset=utf-8'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'Branding-Trip-Live-Status.csv';
+  a.click();
+  URL.revokeObjectURL(a.href);
+  toast('CSV downloaded — import into Google Sheet');
+}
+
+function buildPlainTextUpdate() {
+  const lines = [];
+  lines.push('WELLBEING BRANDING TRIP — STATUS UPDATE');
+  lines.push('Generated: ' + new Date().toISOString());
+  lines.push('');
+  const skipped = [];
+  const pendingPast = [];
+  const pendingFuture = [];
+  const notesDays = [];
+  const today = todayISO();
+
+  for (const day of TRIP_DATA.days) {
+    const dn = state.dayNotes[day.date];
+    if (dn && dn.trim()) notesDays.push(`${day.label}: ${dn.trim()}`);
+    for (const b of day.branches) {
+      const st = getBranchState(day.date, b.code);
+      const note = [st.skipReason, st.notes].filter(Boolean).join(' — ');
+      if (st.status === 'skipped') {
+        skipped.push(`${day.date} ${b.code} ${b.name}${note?': '+note:''}`);
+      } else if (st.status === 'pending') {
+        const line = `${day.date} ${b.code} ${b.name}`;
+        if (day.date < today) pendingPast.push(line + ' (OVERDUE)');
+        else pendingFuture.push(line);
+      } else if (st.status === 'done' && note) {
+        // optional
+      }
+    }
+  }
+  lines.push('=== SKIPPED / MISSED ===');
+  lines.push(skipped.length ? skipped.join('\n') : '(none)');
+  lines.push('');
+  lines.push('=== PENDING (past dates — still open) ===');
+  lines.push(pendingPast.length ? pendingPast.join('\n') : '(none)');
+  lines.push('');
+  lines.push('=== PENDING (today & future) ===');
+  lines.push(pendingFuture.length ? pendingFuture.join('\n') : '(none)');
+  lines.push('');
+  lines.push('=== DAY NOTES ===');
+  lines.push(notesDays.length ? notesDays.join('\n') : '(none)');
+  lines.push('');
+  lines.push('=== SHEET COLUMNS (for Drive sync) ===');
+  lines.push('date,code,name,status,notes,updated_at');
+  lines.push('(Use Download status CSV button for full machine-readable export.)');
+  return lines.join('\n');
+}
+
+async function copyText() {
+  const text = buildPlainTextUpdate();
+  try {
+    await navigator.clipboard.writeText(text);
+    toast('Copied plain-text update');
+  } catch (e) {
+    const ta = document.createElement('textarea');
+    ta.value = text; document.body.appendChild(ta); ta.select();
+    document.execCommand('copy'); ta.remove();
+    toast('Copied plain-text update');
+  }
+}
+
+function parseCsv(text) {
+  const lines = text.replace(/^\uFEFF/, '').trim().split(/\r?\n/);
+  if (!lines.length) return [];
+  const split = (line) => {
+    const out = []; let cur = ''; let q = false;
+    for (let i=0;i<line.length;i++) {
+      const c = line[i];
+      if (q) {
+        if (c === '"' && line[i+1] === '"') { cur += '"'; i++; }
+        else if (c === '"') q = false;
+        else cur += c;
+      } else {
+        if (c === '"') q = true;
+        else if (c === ',') { out.push(cur); cur = ''; }
+        else cur += c;
+      }
+    }
+    out.push(cur);
+    return out;
+  };
+  const header = split(lines[0]).map(h => h.trim().toLowerCase());
+  const idx = Object.fromEntries(header.map((h,i)=>[h,i]));
+  const need = ['date','code','status'];
+  if (!need.every(k => k in idx)) throw new Error('CSV needs date, code, status columns');
+  const rows = [];
+  for (let i=1;i<lines.length;i++) {
+    if (!lines[i].trim()) continue;
+    const cols = split(lines[i]);
+    rows.push({
+      date: cols[idx.date],
+      code: cols[idx.code],
+      name: idx.name!=null ? cols[idx.name] : '',
+      status: (cols[idx.status]||'pending').toLowerCase(),
+      notes: idx.notes!=null ? cols[idx.notes] : '',
+      updated_at: idx.updated_at!=null ? cols[idx.updated_at] : ''
+    });
+  }
+  return rows;
+}
+
+function importCsvText(text) {
+  const rows = parseCsv(text);
+  let n = 0;
+  for (const r of rows) {
+    if (!r.code || !r.date) continue;
+    const status = ['done','skipped','pending'].includes(r.status) ? r.status : 'pending';
+    const k = branchKey(r.date, r.code);
+    state.branches[k] = {
+      status,
+      notes: r.notes || '',
+      skipReason: status==='skipped' ? (r.notes||'') : '',
+      updated_at: r.updated_at || new Date().toISOString()
+    };
+    n++;
+  }
+  saveState();
+  renderDays();
+  toast('Imported ' + n + ' rows');
+}
+
+function jumpToday() {
+  const today = todayISO();
+  filterPhase = 'all';
+  renderChips();
+  renderDays();
+  const el = document.getElementById('day-' + today);
+  if (el) {
+    el.classList.add('open');
+    el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  } else {
+    // nearest upcoming
+    const next = TRIP_DATA.days.find(d => d.date >= today) || TRIP_DATA.days[TRIP_DATA.days.length-1];
+    const n = document.getElementById('day-' + next.date);
+    if (n) { n.classList.add('open'); n.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+    toast('No exact today — jumped to nearest');
+  }
+}
+
+function resetAll() {
+  if (!confirm('Reset all done/skipped/notes on this device?')) return;
+  state = { branches: {}, dayNotes: {}, updatedAt: null };
+  localStorage.removeItem(STORAGE_KEY);
+  saveState();
+  renderDays();
+  toast('Progress reset');
+}
+
+
+function jsonp(url, timeoutMs) {
+  return new Promise((resolve, reject) => {
+    const cb = '_wbCb' + Date.now() + Math.floor(Math.random()*1e6);
+    const t = setTimeout(() => { cleanup(); reject(new Error('Sync timed out')); }, timeoutMs || 20000);
+    function cleanup() {
+      clearTimeout(t);
+      try { delete window[cb]; } catch(e) {}
+      if (s && s.parentNode) s.parentNode.removeChild(s);
+    }
+    window[cb] = (data) => { cleanup(); resolve(data); };
+    const s = document.createElement('script');
+    const join = url.includes('?') ? '&' : '?';
+    s.src = url + join + 'callback=' + cb;
+    s.onerror = () => { cleanup(); reject(new Error('Sync network error')); };
+    document.head.appendChild(s);
+  });
+}
+
+async function pullFromSheet() {
+  toast('Pulling from Sheet…');
+  try {
+    if (SHEET.syncUrl && !SHEET.syncUrl.includes('REPLACE_')) {
+      const data = await jsonp(SHEET.syncUrl + (SHEET.syncUrl.includes('?')?'&':'?') + 'action=get');
+      if (data && data.rows) {
+        applySheetRows(data.rows);
+        toast('Pulled ' + data.rows.length + ' rows from Sheet');
+        return;
+      }
+    }
+    // Fallback: published CSV export (needs Sheet shared: anyone with link can view)
+    const res = await fetch(SHEET.csvUrl + '&_ts=' + Date.now(), { cache: 'no-store' });
+    if (!res.ok) throw new Error('CSV HTTP ' + res.status + ' — share Sheet as Anyone with the link can view');
+    const text = await res.text();
+    if (text.trim().startsWith('<') || text.includes('<!DOCTYPE')) {
+      throw new Error('Sheet not publicly viewable yet — open Sheet → Share → Anyone with the link → Viewer');
+    }
+    importCsvText(text);
+    toast('Pulled from Sheet CSV');
+  } catch (err) {
+    toast(String(err.message || err));
+  }
+}
+
+function applySheetRows(rows) {
+  let n = 0;
+  for (const r of rows) {
+    if (!r.code || !r.date) continue;
+    const status = ['done','skipped','pending','blocked'].includes(r.status) ? r.status : 'pending';
+    if (status === 'blocked') continue;
+    const k = branchKey(r.date, r.code);
+    state.branches[k] = {
+      status: status === 'blocked' ? 'pending' : status,
+      notes: r.notes || '',
+      skipReason: status==='skipped' ? (r.notes||'') : '',
+      updated_at: r.updated_at || new Date().toISOString()
+    };
+    n++;
+  }
+  saveState();
+  renderDays();
+  return n;
+}
+
+function buildStatusPayload() {
+  const rows = [];
+  for (const day of TRIP_DATA.days) {
+    for (const b of day.branches) {
+      const st = getBranchState(day.date, b.code);
+      rows.push({
+        date: day.date,
+        code: b.code,
+        name: b.name,
+        status: st.status || 'pending',
+        notes: (st.status==='skipped' && st.skipReason) ? st.skipReason : (st.notes||''),
+        updated_at: st.updated_at || ''
+      });
+    }
+  }
+  return rows;
+}
+
+async function pushToSheet() {
+  toast('Pushing to Sheet…');
+  try {
+    if (!SHEET.syncUrl || SHEET.syncUrl.includes('REPLACE_')) {
+      // No Apps Script yet — fall back to CSV download for manual import
+      downloadCsv();
+      toast('Sync bridge not live yet — downloaded CSV to paste into Sheet');
+      return;
+    }
+    const rows = buildStatusPayload();
+    const payload = encodeURIComponent(JSON.stringify({ rows: rows }));
+    // Apps Script GET with action=set (JSONP); keep under URL length by chunking
+    const chunkSize = 25;
+    let done = 0;
+    for (let i = 0; i < rows.length; i += chunkSize) {
+      const chunk = rows.slice(i, i + chunkSize);
+      const q = 'action=set&rows=' + encodeURIComponent(JSON.stringify(chunk));
+      const data = await jsonp(SHEET.syncUrl + (SHEET.syncUrl.includes('?')?'&':'?') + q, 30000);
+      if (!data || data.ok === false) throw new Error((data && data.error) || 'Push failed');
+      done += chunk.length;
+      toast('Pushed ' + done + '/' + rows.length);
+    }
+    toast('Sheet updated (' + rows.length + ' rows)');
+  } catch (err) {
+    toast(String(err.message || err));
+  }
+}
+
+
+// init
+document.getElementById('metaSub').textContent =
+  TRIP_DATA.meta.travellers.join(' · ') + ' · Host ' + TRIP_DATA.meta.host +
+  ' · ' + TRIP_DATA.meta.coverage.sites + ' sites';
+
+document.getElementById('btnPullSheet').addEventListener('click', pullFromSheet);
+document.getElementById('btnPushSheet').addEventListener('click', pushToSheet);
+const btnExport = document.getElementById('btnExportSheet');
+if (btnExport) btnExport.addEventListener('click', downloadCsv);
+document.getElementById('btnJumpToday').addEventListener('click', jumpToday);
+document.getElementById('btnMore').addEventListener('click', () => document.getElementById('moreModal').classList.add('show'));
+document.getElementById('btnCloseMore').addEventListener('click', () => document.getElementById('moreModal').classList.remove('show'));
+document.getElementById('moreModal').addEventListener('click', (e) => {
+  if (e.target.id === 'moreModal') e.target.classList.remove('show');
+});
+document.getElementById('btnCopyText').addEventListener('click', copyText);
+document.getElementById('btnReset').addEventListener('click', resetAll);
+document.getElementById('btnImportCsv').addEventListener('click', () => document.getElementById('fileImport').click());
+document.getElementById('fileImport').addEventListener('change', async (e) => {
+  const file = e.target.files && e.target.files[0];
+  if (!file) return;
+  try { importCsvText(await file.text()); }
+  catch (err) { toast('Import failed: ' + err.message); }
+  e.target.value = '';
+});
+
+renderChips();
+renderDays();
+updateStats();
+const boot = document.getElementById('bootNote');
+if (boot) boot.innerHTML = 'Ticks here stay on this phone. Prefer updating the <a href="https://docs.google.com/spreadsheets/d/1sM0GIPORgPaD2YQXQKGKeXGow6EfnHvQMVZY_2TmXyM/edit" target="_blank" rel="noopener">live status Sheet</a> so the planner can reshape the trip.';
+// Auto-open today
+setTimeout(jumpToday, 100);
+</script>
+</body>
+</html>
