@@ -5,7 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
 <meta name="color-scheme" content="dark light"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
-<title>Wellbeing Branding Trip</title>
+<meta name="apple-mobile-web-app-title" content="Branding trip"/>
+<title>Branding trip</title>
 <style>
 :root {
   --bg: #0f1218;
@@ -18,8 +19,6 @@
   --done: #3ecf8e;
   --skip: #f0a060;
   --pending: #6b7385;
-  --today: #5b9fff;
-  --blocked: #7a8499;
   --danger: #ff6b7a;
   --radius: 14px;
   --tap: 48px;
@@ -37,8 +36,6 @@
     --done: #1a9f63;
     --skip: #c46a20;
     --pending: #7a8499;
-    --today: #2b6de0;
-    --blocked: #6b7385;
     --danger: #d63b4d;
   }
 }
@@ -46,7 +43,7 @@
 html, body { margin: 0; padding: 0; background: var(--bg); color: var(--text);
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   font-size: 16px; line-height: 1.4; }
-body { padding-bottom: calc(88px + var(--safe-b)); }
+body { padding-bottom: calc(84px + var(--safe-b)); }
 a { color: var(--accent); }
 
 .top {
@@ -54,107 +51,111 @@ a { color: var(--accent); }
   background: color-mix(in srgb, var(--bg) 92%, transparent);
   backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
   border-bottom: 1px solid var(--border);
-  padding: 12px 14px 10px;
+  padding: 12px 14px 0;
 }
 .top h1 { margin: 0; font-size: 1.15rem; font-weight: 700; letter-spacing: -0.02em; }
-.top .sub { color: var(--muted); font-size: 0.78rem; margin-top: 2px; }
-.stats { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
-.stat {
-  background: var(--surface2); border-radius: 999px; padding: 4px 10px;
-  font-size: 0.75rem; color: var(--muted); font-weight: 600;
-}
-.stat b { color: var(--text); }
-.stat.done b { color: var(--done); }
-.stat.skip b { color: var(--skip); }
+.top .sub { color: var(--muted); font-size: 0.85rem; margin-top: 4px; font-weight: 600; }
+.top .sub b.done { color: var(--done); }
+.top .sub b.left { color: var(--accent); }
 
-.chips {
-  display: flex; gap: 8px; overflow-x: auto; padding: 10px 14px 4px;
-  -webkit-overflow-scrolling: touch; scrollbar-width: none;
+.tabs {
+  display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0;
+  margin-top: 12px;
 }
-.chips::-webkit-scrollbar { display: none; }
-.chip {
-  flex: 0 0 auto; min-height: 36px; padding: 6px 14px; border-radius: 999px;
-  border: 1px solid var(--border); background: var(--surface);
-  color: var(--muted); font-size: 0.82rem; font-weight: 600; cursor: pointer;
+.tab {
+  min-height: 42px; border: none; background: transparent;
+  color: var(--muted); font-weight: 700; font-size: 0.92rem;
+  cursor: pointer; border-bottom: 2px solid transparent; padding: 8px;
 }
-.chip.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+.tab.active { color: var(--text); border-bottom-color: var(--accent); }
 
-main { padding: 8px 12px 24px; max-width: 640px; margin: 0 auto; }
-
-.day {
+.boot-note {
+  margin: 10px 14px 0; padding: 10px 12px; border-radius: 12px;
   background: var(--surface); border: 1px solid var(--border);
-  border-radius: var(--radius); margin-bottom: 12px; overflow: hidden;
+  font-size: 0.85rem; color: var(--muted);
 }
-.day.today { border-color: var(--today); box-shadow: 0 0 0 2px color-mix(in srgb, var(--today) 35%, transparent); }
-.day-head {
-  padding: 14px 14px 10px; cursor: pointer; user-select: none;
-  display: grid; grid-template-columns: 1fr auto; gap: 8px; align-items: start;
-}
-.day-head .label { font-size: 0.75rem; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; }
-.day-head .title { font-size: 1.02rem; font-weight: 700; margin-top: 2px; }
-.day-head .badge {
-  font-size: 0.7rem; font-weight: 700; padding: 4px 8px; border-radius: 8px;
-  background: var(--surface2); color: var(--muted); white-space: nowrap;
-}
-.day.today .badge.today-badge { background: var(--today); color: #fff; }
-.day.kind-blocked .badge, .day.kind-clear .badge { background: #3a3340; color: #d0c4d8; }
-.day.kind-travel .badge { background: #2a3548; color: #9ec0ff; }
-.day.kind-arrive .badge, .day.kind-depart .badge, .day.kind-prep .badge { background: var(--surface2); }
 
-.day-body { padding: 0 14px 14px; display: none; }
-.day.open .day-body { display: block; }
-.day-note-plan { color: var(--muted); font-size: 0.88rem; margin: 0 0 10px; }
-.day-notes-wrap label, .branch-notes-wrap label {
-  display: block; font-size: 0.72rem; color: var(--muted); font-weight: 600;
-  margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.03em;
+main { padding: 12px 12px 24px; max-width: 640px; margin: 0 auto; }
+
+.panel-day { display: none; }
+.panel-day.show { display: block; }
+
+.day-hero { margin-bottom: 12px; }
+.day-hero .label { font-size: 0.75rem; color: var(--muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; }
+.day-hero .title { font-size: 1.2rem; font-weight: 700; margin-top: 2px; }
+.day-hero .plan { color: var(--muted); font-size: 0.9rem; margin: 8px 0 0; }
+.day-hero .empty { color: var(--muted); font-size: 0.95rem; font-style: italic; margin-top: 10px; }
+
+.maps-btn {
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  width: 100%; min-height: 52px; margin: 12px 0 4px;
+  border-radius: 14px; border: none; cursor: pointer;
+  background: var(--accent); color: #fff; font-weight: 700; font-size: 1rem;
+  text-decoration: none;
 }
-textarea {
-  width: 100%; min-height: 64px; resize: vertical;
-  background: var(--surface2); color: var(--text); border: 1px solid var(--border);
-  border-radius: 10px; padding: 10px 12px; font: inherit; font-size: 0.95rem;
-}
-textarea:focus { outline: 2px solid color-mix(in srgb, var(--accent) 50%, transparent); border-color: var(--accent); }
+.maps-btn:active { transform: scale(0.98); }
+.maps-btn.hidden { display: none !important; }
 
 .branch {
-  background: var(--surface2); border: 1px solid var(--border);
-  border-radius: 12px; padding: 12px; margin-top: 10px;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 14px; margin-top: 10px;
 }
 .branch.status-done { border-color: color-mix(in srgb, var(--done) 55%, var(--border)); }
 .branch.status-skipped { border-color: color-mix(in srgb, var(--skip) 55%, var(--border)); opacity: 0.92; }
-.branch-top { display: flex; justify-content: space-between; gap: 8px; align-items: flex-start; }
+.branch-name { font-weight: 700; font-size: 1.05rem; }
 .branch-code {
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-  font-size: 0.78rem; font-weight: 700; color: var(--accent);
+  font-size: 0.72rem; font-weight: 700; color: var(--muted); margin-left: 6px;
 }
-.branch-name { font-weight: 700; margin-top: 2px; }
-.branch-addr { color: var(--muted); font-size: 0.85rem; margin-top: 4px; }
+.branch-addr { color: var(--muted); font-size: 0.88rem; margin-top: 4px; }
 .status-pill {
+  display: inline-block; margin-top: 8px;
   font-size: 0.7rem; font-weight: 700; text-transform: uppercase;
-  padding: 4px 8px; border-radius: 8px; background: var(--bg); color: var(--pending);
+  padding: 3px 8px; border-radius: 8px; background: var(--surface2); color: var(--pending);
 }
 .branch.status-done .status-pill { color: var(--done); }
 .branch.status-skipped .status-pill { color: var(--skip); }
 
-.btns { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-top: 12px; }
+.btns { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 12px; }
 .btn {
   min-height: var(--tap); border-radius: 12px; border: 1px solid var(--border);
-  background: var(--surface); color: var(--text); font-weight: 700; font-size: 0.88rem;
+  background: var(--surface2); color: var(--text); font-weight: 700; font-size: 0.95rem;
   cursor: pointer; padding: 8px;
 }
 .btn:active { transform: scale(0.98); }
 .btn.done { border-color: var(--done); color: var(--done); }
 .btn.skip { border-color: var(--skip); color: var(--skip); }
-.btn.pend { border-color: var(--pending); color: var(--muted); }
 .btn.active.done { background: var(--done); color: #062; border-color: var(--done); }
 .btn.active.skip { background: var(--skip); color: #3a1a00; border-color: var(--skip); }
-.btn.active.pend { background: var(--pending); color: #fff; }
-.branch-notes-wrap { margin-top: 10px; }
-.skip-reason { margin-top: 8px; display: none; }
+
+.skip-reason { margin-top: 10px; display: none; }
 .skip-reason.show { display: block; }
 .skip-reason input {
   width: 100%; min-height: 44px; border-radius: 10px; border: 1px solid var(--border);
   background: var(--bg); color: var(--text); padding: 10px 12px; font: inherit;
 }
+
+/* All tab accordion */
+.day {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); margin-bottom: 10px; overflow: hidden;
+}
+.day.today { border-color: var(--accent); box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 30%, transparent); }
+.day-head {
+  padding: 14px; cursor: pointer; user-select: none;
+  display: grid; grid-template-columns: 1fr auto; gap: 8px; align-items: start;
+}
+.day-head .label { font-size: 0.72rem; color: var(--muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; }
+.day-head .title { font-size: 1rem; font-weight: 700; margin-top: 2px; }
+.day-head .badge {
+  font-size: 0.7rem; font-weight: 700; padding: 4px 8px; border-radius: 8px;
+  background: var(--surface2); color: var(--muted); white-space: nowrap;
+}
+.day.today .badge { background: var(--accent); color: #fff; }
+.day-body { padding: 0 14px 14px; display: none; }
+.day.open .day-body { display: block; }
+.day-note-plan { color: var(--muted); font-size: 0.88rem; margin: 0 0 8px; }
+.empty-day { color: var(--muted); font-size: 0.9rem; font-style: italic; padding: 4px 0; }
 
 .dock {
   position: fixed; left: 0; right: 0; bottom: 0; z-index: 50;
@@ -162,14 +163,18 @@ textarea:focus { outline: 2px solid color-mix(in srgb, var(--accent) 50%, transp
   backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
   border-top: 1px solid var(--border);
   padding: 10px 12px calc(10px + var(--safe-b));
-  display: grid; grid-template-columns: 1fr 1fr; gap: 8px; max-width: 640px; margin: 0 auto;
+  display: grid; grid-template-columns: 1.4fr 1fr 0.8fr; gap: 8px;
+  max-width: 640px; margin: 0 auto;
 }
-.dock .btn-primary, .dock .btn-secondary {
-  min-height: var(--tap); border-radius: 14px; font-weight: 700; font-size: 0.9rem;
-  border: none; cursor: pointer;
+.dock button, .dock a.dock-btn {
+  min-height: var(--tap); border-radius: 14px; font-weight: 700; font-size: 0.88rem;
+  border: none; cursor: pointer; display: flex; align-items: center; justify-content: center;
+  text-decoration: none; color: var(--text);
 }
-.btn-primary { background: var(--accent); color: #fff; grid-column: 1 / -1; }
-.btn-secondary { background: var(--surface2); color: var(--text); border: 1px solid var(--border) !important; }
+.dock .primary { background: var(--accent); color: #fff; }
+.dock .secondary { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
+.dock .primary.disabled { opacity: 0.45; pointer-events: none; }
+
 .toast {
   position: fixed; left: 50%; bottom: calc(90px + var(--safe-b)); transform: translateX(-50%);
   background: var(--text); color: var(--bg); padding: 10px 16px; border-radius: 999px;
@@ -190,71 +195,49 @@ textarea:focus { outline: 2px solid color-mix(in srgb, var(--accent) 50%, transp
 .modal h2 { margin: 0 0 8px; font-size: 1.1rem; }
 .modal p { margin: 0 0 14px; color: var(--muted); font-size: 0.9rem; }
 .modal .row { display: grid; gap: 8px; }
-.modal .btn { width: 100%; }
+.modal .btn { width: 100%; min-height: var(--tap); border-radius: 12px; border: 1px solid var(--border);
+  background: var(--surface2); color: var(--text); font-weight: 700; font-size: 0.9rem; cursor: pointer; }
 .hidden { display: none !important; }
-.boot-note {
-  margin: 12px 14px; padding: 12px 14px; border-radius: var(--radius);
-  background: var(--surface); border: 1px solid var(--border);
-  font-size: 0.9rem; color: var(--muted);
-}
-.boot-note a { font-weight: 600; }
-.sheet-bar {
-  display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px;
-}
-.sheet-bar a.btn-link {
-  display: inline-flex; align-items: center; justify-content: center;
-  min-height: 40px; padding: 8px 14px; border-radius: 999px;
-  background: var(--surface2); border: 1px solid var(--border);
-  color: var(--accent); text-decoration: none; font-size: 0.82rem; font-weight: 600;
-}
-.empty-day {
-  color: var(--muted); font-size: 0.9rem; padding: 8px 0; font-style: italic;
-}
 </style>
 </head>
 <body>
 <noscript>
-  <div style="padding:16px;font-family:sans-serif">This trip app needs JavaScript. If you opened it inside Google Drive, download the HTML file and open it in Safari or Chrome instead.</div>
+  <div style="padding:16px;font-family:sans-serif">This trip app needs JavaScript. Download the HTML and open it in Safari or Chrome.</div>
 </noscript>
+
 <div class="top">
-  <h1>Wellbeing Branding Trip</h1>
-  <div class="sub" id="metaSub"></div>
-  <div class="sheet-bar">
-    <a class="btn-link" href="https://docs.google.com/spreadsheets/d/1sM0GIPORgPaD2YQXQKGKeXGow6EfnHvQMVZY_2TmXyM/edit" target="_blank" rel="noopener">Open live status Sheet</a>
-  </div>
-  <div class="stats">
-    <div class="stat done">Done <b id="nDone">0</b></div>
-    <div class="stat skip">Skipped <b id="nSkip">0</b></div>
-    <div class="stat">Pending <b id="nPend">0</b></div>
-    <div class="stat">Sites <b id="nTotal">0</b></div>
+  <h1>Branding trip</h1>
+  <div class="sub" id="statsLine">Done <b class="done" id="nDone">0</b> · Left <b class="left" id="nLeft">0</b></div>
+  <div class="tabs" role="tablist">
+    <button type="button" class="tab active" data-tab="today" id="tabToday">Today</button>
+    <button type="button" class="tab" data-tab="tomorrow" id="tabTomorrow">Tomorrow</button>
+    <button type="button" class="tab" data-tab="all" id="tabAll">All</button>
   </div>
 </div>
-<div class="chips" id="phaseChips"></div>
-<div class="boot-note" id="bootNote">
-  <b style="color:var(--text)">How to open:</b> Google Drive preview stays blank (it blocks HTML apps).
-  Download this file, then open it in Safari or Chrome. Progress stays on this phone.
-  Tick status in the <a href="https://docs.google.com/spreadsheets/d/1sM0GIPORgPaD2YQXQKGKeXGow6EfnHvQMVZY_2TmXyM/edit" target="_blank" rel="noopener">live Sheet</a> so the planner can reshuffle.
-</div>
-<main id="days"></main>
+
+<div class="boot-note" id="bootNote">Ticks sync to the planner Sheet automatically.</div>
+
+<main>
+  <div class="panel-day show" id="panelFocus"></div>
+  <div class="panel-day" id="panelAll"></div>
+</main>
 
 <div class="dock">
-  <button class="btn-primary" id="btnPullSheet" type="button">Pull from Sheet</button>
-  <button class="btn-secondary" id="btnPushSheet" type="button">Push to Sheet</button>
-  <button class="btn-secondary" id="btnJumpToday" type="button">Jump to today</button>
-  <button class="btn-secondary" id="btnMore" type="button">More…</button>
+  <a class="dock-btn primary" id="btnDockMaps" href="#" target="_blank" rel="noopener">Maps route</a>
+  <button class="secondary" id="btnSync" type="button">Sync</button>
+  <button class="secondary" id="btnMore" type="button">More</button>
 </div>
 <div class="toast" id="toast"></div>
 
 <div class="modal-bg" id="moreModal">
   <div class="modal">
-    <h2>Sync &amp; tools</h2>
-    <p>Progress saves on this phone only. The planner reads the <a href="https://docs.google.com/spreadsheets/d/1sM0GIPORgPaD2YQXQKGKeXGow6EfnHvQMVZY_2TmXyM/edit" target="_blank" rel="noopener">live status Sheet</a> — update that Sheet on your phone (preferred), or download CSV below and import.</p>
+    <h2>More</h2>
+    <p>Progress saves on this phone. Status also syncs to the planner Sheet.</p>
     <div class="row">
-      <a class="btn" href="https://docs.google.com/spreadsheets/d/1sM0GIPORgPaD2YQXQKGKeXGow6EfnHvQMVZY_2TmXyM/edit" target="_blank" rel="noopener" style="display:flex;align-items:center;justify-content:center;text-decoration:none;color:var(--accent)">Open live status Sheet</a>
-      <button class="btn" id="btnExportSheet" type="button">Download status CSV</button>
-      <button class="btn" id="btnCopyText" type="button">Copy plain-text update</button>
-      <button class="btn" id="btnImportCsv" type="button">Import status CSV…</button>
-      <input type="file" id="fileImport" accept=".csv,text/csv" class="hidden"/>
+      <a class="btn" href="https://docs.google.com/spreadsheets/d/1sM0GIPORgPaD2YQXQKGKeXGow6EfnHvQMVZY_2TmXyM/edit" target="_blank" rel="noopener" style="display:flex;align-items:center;justify-content:center;text-decoration:none;color:var(--accent)">Open live Sheet</a>
+      <button class="btn" id="btnJumpAll" type="button">Full plan (All tab)</button>
+      <button class="btn" id="btnPullOnly" type="button">Pull from Sheet</button>
+      <button class="btn" id="btnPushOnly" type="button">Push to Sheet</button>
       <button class="btn" id="btnReset" type="button" style="color:var(--danger)">Reset all progress</button>
       <button class="btn" id="btnCloseMore" type="button">Close</button>
     </div>
@@ -272,11 +255,11 @@ const SHEET = {
   // JSONP/GET Apps Script middleware for two-way sync (set after deploy)
   syncUrl: localStorage.getItem('wb-sync-url') || 'https://script.google.com/macros/s/AKfycbzZiwFbO5R5UTOay_rX_wR7h_O_-ODnBjgNEpTspsPPVZgQH6fzZVBNKCdWET8Zbks/exec'
 };
-const PHASES = TRIP_DATA.meta.phases;
-const KIND_LABEL = {
-  visit: 'Visit', arrive: 'Arrive', blocked: 'Blocked', travel: 'Travel',
-  clear: 'Clear', prep: 'Prep', depart: 'Depart'
-};
+
+let state = loadState();
+let activeTab = 'today'; // today | tomorrow | all
+let focusDate = null; // date shown in Today/Tomorrow panels
+let openDays = {}; // All-tab accordion open state
 
 function todayISO() {
   const d = new Date();
@@ -284,6 +267,16 @@ function todayISO() {
   const m = String(d.getMonth()+1).padStart(2,'0');
   const day = String(d.getDate()).padStart(2,'0');
   return `${y}-${m}-${day}`;
+}
+
+function addDaysISO(iso, n) {
+  const [y,m,d] = iso.split('-').map(Number);
+  const dt = new Date(y, m-1, d);
+  dt.setDate(dt.getDate() + n);
+  const yy = dt.getFullYear();
+  const mm = String(dt.getMonth()+1).padStart(2,'0');
+  const dd = String(dt.getDate()).padStart(2,'0');
+  return `${yy}-${mm}-${dd}`;
 }
 
 function loadState() {
@@ -308,10 +301,6 @@ function schedulePushToSheet() {
   _pushTimer = setTimeout(() => { pushToSheet({ silent: true }); }, 1200);
 }
 
-
-let state = loadState();
-let filterPhase = 'all';
-
 function branchKey(date, code) { return date + '|' + code; }
 
 function getBranchState(date, code) {
@@ -322,22 +311,14 @@ function getBranchState(date, code) {
 function setBranchStatus(date, code, status) {
   const k = branchKey(date, code);
   const cur = getBranchState(date, code);
+  // Toggle: tapping active Done/Skip returns to pending
+  if (cur.status === status) status = 'pending';
   const next = { ...cur, status, updated_at: new Date().toISOString() };
-  if (status === 'skipped' && !next.skipReason && !next.notes) {
-    /* reason prompted separately */
-  }
   if (status !== 'skipped') next.skipReason = '';
   state.branches[k] = next;
   saveState();
   schedulePushToSheet();
   return next;
-}
-
-function setBranchNotes(date, code, notes) {
-  const k = branchKey(date, code);
-  const cur = getBranchState(date, code);
-  state.branches[k] = { ...cur, notes, updated_at: new Date().toISOString() };
-  saveState();
 }
 
 function setSkipReason(date, code, reason) {
@@ -368,135 +349,7 @@ function updateStats() {
     }
   }
   document.getElementById('nDone').textContent = done;
-  document.getElementById('nSkip').textContent = skip;
-  document.getElementById('nPend').textContent = pend;
-  document.getElementById('nTotal').textContent = total;
-}
-
-function renderChips() {
-  const wrap = document.getElementById('phaseChips');
-  const items = [{id:'all', label:'All'}].concat(PHASES);
-  wrap.innerHTML = items.map(p =>
-    `<button type="button" class="chip${filterPhase===p.id?' active':''}" data-phase="${p.id}">${p.label}</button>`
-  ).join('');
-  wrap.querySelectorAll('.chip').forEach(btn => {
-    btn.addEventListener('click', () => {
-      filterPhase = btn.dataset.phase;
-      renderChips();
-      renderDays();
-    });
-  });
-}
-
-function renderDays() {
-  const today = todayISO();
-  const root = document.getElementById('days');
-  const days = TRIP_DATA.days.filter(d => filterPhase==='all' || d.phase===filterPhase);
-  root.innerHTML = '';
-  for (const day of days) {
-    const isToday = day.date === today;
-    const openDefault = isToday || (day.kind === 'visit' && day.date >= today && day.date <= today);
-    const el = document.createElement('article');
-    el.className = `day kind-${day.kind}${isToday?' today':''}${isToday?' open':''}`;
-    el.id = 'day-' + day.date;
-    el.dataset.date = day.date;
-
-    const doneN = day.branches.filter(b => getBranchState(day.date,b.code).status==='done').length;
-    const skipN = day.branches.filter(b => getBranchState(day.date,b.code).status==='skipped').length;
-    let badge = KIND_LABEL[day.kind] || day.kind;
-    if (day.branches.length) badge = `${doneN+skipN}/${day.branches.length}`;
-    if (isToday) badge = 'TODAY · ' + badge;
-
-    const dayNote = state.dayNotes[day.date] || '';
-
-    let branchesHtml = '';
-    if (!day.branches.length) {
-      const reason = day.blockReason || '';
-      branchesHtml = `<div class="empty-day">${reason || 'No branch visits this day.'}</div>`;
-    } else {
-      branchesHtml = day.branches.map(b => {
-        const st = getBranchState(day.date, b.code);
-        const skShow = st.status === 'skipped' ? ' show' : '';
-        return `<div class="branch status-${st.status}" data-code="${b.code}">
-          <div class="branch-top">
-            <div>
-              <div class="branch-code">${b.code}</div>
-              <div class="branch-name">${escapeHtml(b.name)}</div>
-              <div class="branch-addr">${escapeHtml(b.address)}</div>
-            </div>
-            <span class="status-pill">${st.status}</span>
-          </div>
-          <div class="btns">
-            <button type="button" class="btn done${st.status==='done'?' active':''}" data-act="done">Done</button>
-            <button type="button" class="btn skip${st.status==='skipped'?' active':''}" data-act="skip">Skip</button>
-            <button type="button" class="btn pend${st.status==='pending'?' active':''}" data-act="pending">Pending</button>
-          </div>
-          <div class="skip-reason${skShow}">
-            <label style="font-size:0.72rem;color:var(--muted);font-weight:600">Skip reason (optional)</label>
-            <input type="text" placeholder="e.g. traffic, closed, didn't make it" value="${escapeAttr(st.skipReason||'')}" data-skip-reason/>
-          </div>
-          <div class="branch-notes-wrap">
-            <label>Branch notes</label>
-            <textarea rows="2" placeholder="didn't make it, traffic, closed…" data-branch-notes>${escapeHtml(st.notes||'')}</textarea>
-          </div>
-        </div>`;
-      }).join('');
-    }
-
-    el.innerHTML = `
-      <div class="day-head">
-        <div>
-          <div class="label">${day.label} · ${day.phase.replace('-',' ')}</div>
-          <div class="title">${escapeHtml(day.title)}</div>
-        </div>
-        <span class="badge${isToday?' today-badge':''}">${badge}</span>
-      </div>
-      <div class="day-body">
-        <p class="day-note-plan">${escapeHtml(day.notes||'')}</p>
-        <div class="day-notes-wrap">
-          <label>Day notes</label>
-          <textarea rows="2" placeholder="Day-level notes…" data-day-notes>${escapeHtml(dayNote)}</textarea>
-        </div>
-        ${branchesHtml}
-      </div>`;
-
-    el.querySelector('.day-head').addEventListener('click', () => el.classList.toggle('open'));
-
-    const dayTa = el.querySelector('[data-day-notes]');
-    dayTa.addEventListener('change', () => { state.dayNotes[day.date] = dayTa.value; saveState(); });
-    dayTa.addEventListener('blur', () => { state.dayNotes[day.date] = dayTa.value; saveState(); });
-
-    el.querySelectorAll('.branch').forEach(br => {
-      const code = br.dataset.code;
-      br.querySelectorAll('[data-act]').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-          e.stopPropagation();
-          const act = btn.dataset.act;
-          setBranchStatus(day.date, code, act === 'skip' ? 'skipped' : act);
-          if (act === 'skip') {
-            const inp = br.querySelector('[data-skip-reason]');
-            br.querySelector('.skip-reason').classList.add('show');
-            setTimeout(() => inp && inp.focus(), 50);
-          }
-          // re-render just this day section efficiently by full re-render
-          const wasOpen = el.classList.contains('open');
-          renderDays();
-          const neu = document.getElementById('day-' + day.date);
-          if (neu && wasOpen) neu.classList.add('open');
-        });
-      });
-      const notes = br.querySelector('[data-branch-notes]');
-      notes.addEventListener('change', () => setBranchNotes(day.date, code, notes.value));
-      notes.addEventListener('blur', () => setBranchNotes(day.date, code, notes.value));
-      const skipInp = br.querySelector('[data-skip-reason]');
-      if (skipInp) {
-        skipInp.addEventListener('change', () => setSkipReason(day.date, code, skipInp.value));
-        skipInp.addEventListener('blur', () => setSkipReason(day.date, code, skipInp.value));
-      }
-    });
-
-    root.appendChild(el);
-  }
+  document.getElementById('nLeft').textContent = pend;
 }
 
 function escapeHtml(s) {
@@ -506,103 +359,299 @@ function escapeAttr(s) {
   return escapeHtml(s).replace(/\n/g, ' ');
 }
 
-function buildStatusRows() {
-  const rows = [];
-  for (const day of TRIP_DATA.days) {
-    for (const b of day.branches) {
-      const st = getBranchState(day.date, b.code);
-      const notes = [st.skipReason, st.notes].filter(Boolean).filter((v,i,a)=>a.indexOf(v)===i).join(' | ');
-      rows.push({
-        date: day.date,
-        code: b.code,
-        name: b.name,
-        status: st.status,
-        notes: notes,
-        updated_at: st.updated_at || ''
+function findDay(date) {
+  return TRIP_DATA.days.find(d => d.date === date) || null;
+}
+
+function nearestDay(iso) {
+  return TRIP_DATA.days.find(d => d.date >= iso) || TRIP_DATA.days[TRIP_DATA.days.length - 1];
+}
+
+function branchAddress(b) {
+  const addr = (b.address || '').trim();
+  const pc = (b.pc || '').trim();
+  if (addr && pc && !addr.toUpperCase().includes(pc.toUpperCase())) return addr + ', ' + pc;
+  return addr || pc || b.name || '';
+}
+
+function dayRouteBranches(day) {
+  if (!day || !day.branches.length) return [];
+  const pending = day.branches.filter(b => getBranchState(day.date, b.code).status === 'pending');
+  return pending.length ? pending : day.branches.slice();
+}
+
+function mapsUrlForBranches(branches) {
+  if (!branches.length) return null;
+  const stops = branches.map(b => encodeURIComponent(branchAddress(b)));
+  if (stops.length === 1) {
+    return 'https://www.google.com/maps/dir/?api=1&travelmode=driving&destination=' + stops[0];
+  }
+  const origin = stops[0];
+  const destination = stops[stops.length - 1];
+  let url = 'https://www.google.com/maps/dir/?api=1&travelmode=driving&origin=' + origin + '&destination=' + destination;
+  if (stops.length > 2) {
+    url += '&waypoints=' + stops.slice(1, -1).join('|');
+  }
+  return url;
+}
+
+function mapsUrlForDay(day) {
+  return mapsUrlForBranches(dayRouteBranches(day));
+}
+
+function branchCardHtml(day, b) {
+  const st = getBranchState(day.date, b.code);
+  const skShow = st.status === 'skipped' ? ' show' : '';
+  return `<div class="branch status-${st.status}" data-code="${b.code}" data-date="${day.date}">
+    <div>
+      <span class="branch-name">${escapeHtml(b.name)}</span>
+      <span class="branch-code">${escapeHtml(b.code)}</span>
+    </div>
+    <div class="branch-addr">${escapeHtml(b.address || '')}</div>
+    <span class="status-pill">${st.status}</span>
+    <div class="btns">
+      <button type="button" class="btn done${st.status==='done'?' active':''}" data-act="done">Done</button>
+      <button type="button" class="btn skip${st.status==='skipped'?' active':''}" data-act="skip">Skip</button>
+    </div>
+    <div class="skip-reason${skShow}">
+      <input type="text" placeholder="Skip reason (optional)" value="${escapeAttr(st.skipReason||'')}" data-skip-reason/>
+    </div>
+  </div>`;
+}
+
+function bindBranchCards(root) {
+  root.querySelectorAll('.branch').forEach(br => {
+    const date = br.dataset.date;
+    const code = br.dataset.code;
+    br.querySelectorAll('[data-act]').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const act = btn.dataset.act === 'skip' ? 'skipped' : 'done';
+        setBranchStatus(date, code, act);
+        render();
       });
+    });
+    const skipInp = br.querySelector('[data-skip-reason]');
+    if (skipInp) {
+      skipInp.addEventListener('change', () => setSkipReason(date, code, skipInp.value));
+      skipInp.addEventListener('blur', () => setSkipReason(date, code, skipInp.value));
+      skipInp.addEventListener('click', (e) => e.stopPropagation());
     }
+  });
+}
+
+function renderFocusDay(day) {
+  const panel = document.getElementById('panelFocus');
+  if (!day) {
+    panel.innerHTML = '<div class="day-hero"><div class="title">No day found</div></div>';
+    return;
   }
-  return rows;
+  focusDate = day.date;
+  const plan = (day.notes || '').trim();
+  let body = '';
+  if (!day.branches.length) {
+    body = `<div class="empty">${escapeHtml(day.blockReason || 'No branch visits this day.')}</div>`;
+  } else {
+    body = day.branches.map(b => branchCardHtml(day, b)).join('');
+  }
+  const maps = mapsUrlForDay(day);
+  const mapsHtml = maps
+    ? `<a class="maps-btn" href="${maps}" target="_blank" rel="noopener">Open Google Maps route</a>`
+    : '';
+
+  panel.innerHTML = `
+    <div class="day-hero">
+      <div class="label">${escapeHtml(day.label)}</div>
+      <div class="title">${escapeHtml(day.title)}</div>
+      ${plan ? `<p class="plan">${escapeHtml(plan)}</p>` : ''}
+      ${mapsHtml}
+      ${body}
+    </div>`;
+  bindBranchCards(panel);
+  updateDockMaps(day);
 }
 
-function toCsv(rows) {
-  const cols = ['date','code','name','status','notes','updated_at'];
-  const esc = (v) => {
-    const s = String(v??'');
-    if (/[",\n\r]/.test(s)) return '"' + s.replace(/"/g,'""') + '"';
-    return s;
-  };
-  return [cols.join(',')].concat(rows.map(r => cols.map(c => esc(r[c])).join(','))).join('\n');
-}
-
-function downloadCsv() {
-  const csv = toCsv(buildStatusRows());
-  const blob = new Blob([csv], {type:'text/csv;charset=utf-8'});
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = 'Branding-Trip-Live-Status.csv';
-  a.click();
-  URL.revokeObjectURL(a.href);
-  toast('CSV downloaded — import into Google Sheet');
-}
-
-function buildPlainTextUpdate() {
-  const lines = [];
-  lines.push('WELLBEING BRANDING TRIP — STATUS UPDATE');
-  lines.push('Generated: ' + new Date().toISOString());
-  lines.push('');
-  const skipped = [];
-  const pendingPast = [];
-  const pendingFuture = [];
-  const notesDays = [];
+function renderAll() {
   const today = todayISO();
-
+  const root = document.getElementById('panelAll');
+  root.innerHTML = '';
   for (const day of TRIP_DATA.days) {
-    const dn = state.dayNotes[day.date];
-    if (dn && dn.trim()) notesDays.push(`${day.label}: ${dn.trim()}`);
-    for (const b of day.branches) {
-      const st = getBranchState(day.date, b.code);
-      const note = [st.skipReason, st.notes].filter(Boolean).join(' — ');
-      if (st.status === 'skipped') {
-        skipped.push(`${day.date} ${b.code} ${b.name}${note?': '+note:''}`);
-      } else if (st.status === 'pending') {
-        const line = `${day.date} ${b.code} ${b.name}`;
-        if (day.date < today) pendingPast.push(line + ' (OVERDUE)');
-        else pendingFuture.push(line);
-      } else if (st.status === 'done' && note) {
-        // optional
-      }
+    const isToday = day.date === today;
+    const el = document.createElement('article');
+    const isOpen = openDays[day.date] != null ? openDays[day.date] : isToday;
+    el.className = `day${isToday?' today':''}${isOpen?' open':''}`;
+    el.id = 'day-' + day.date;
+    el.dataset.date = day.date;
+
+    const doneN = day.branches.filter(b => getBranchState(day.date,b.code).status==='done').length;
+    const skipN = day.branches.filter(b => getBranchState(day.date,b.code).status==='skipped').length;
+    let badge = day.branches.length ? `${doneN+skipN}/${day.branches.length}` : (day.kind || '');
+    if (isToday) badge = 'TODAY · ' + badge;
+
+    let branchesHtml = '';
+    if (!day.branches.length) {
+      branchesHtml = `<div class="empty-day">${escapeHtml(day.blockReason || 'No branch visits this day.')}</div>`;
+    } else {
+      branchesHtml = day.branches.map(b => branchCardHtml(day, b)).join('');
     }
+    const maps = mapsUrlForDay(day);
+    const mapsHtml = maps
+      ? `<a class="maps-btn" href="${maps}" target="_blank" rel="noopener">Open Google Maps route</a>`
+      : '';
+    const plan = (day.notes || '').trim();
+
+    el.innerHTML = `
+      <div class="day-head">
+        <div>
+          <div class="label">${escapeHtml(day.label)}</div>
+          <div class="title">${escapeHtml(day.title)}</div>
+        </div>
+        <span class="badge">${escapeHtml(badge)}</span>
+      </div>
+      <div class="day-body">
+        ${plan ? `<p class="day-note-plan">${escapeHtml(plan)}</p>` : ''}
+        ${mapsHtml}
+        ${branchesHtml}
+      </div>`;
+
+    el.querySelector('.day-head').addEventListener('click', () => {
+      el.classList.toggle('open');
+      openDays[day.date] = el.classList.contains('open');
+    });
+    bindBranchCards(el);
+    root.appendChild(el);
   }
-  lines.push('=== SKIPPED / MISSED ===');
-  lines.push(skipped.length ? skipped.join('\n') : '(none)');
-  lines.push('');
-  lines.push('=== PENDING (past dates — still open) ===');
-  lines.push(pendingPast.length ? pendingPast.join('\n') : '(none)');
-  lines.push('');
-  lines.push('=== PENDING (today & future) ===');
-  lines.push(pendingFuture.length ? pendingFuture.join('\n') : '(none)');
-  lines.push('');
-  lines.push('=== DAY NOTES ===');
-  lines.push(notesDays.length ? notesDays.join('\n') : '(none)');
-  lines.push('');
-  lines.push('=== SHEET COLUMNS (for Drive sync) ===');
-  lines.push('date,code,name,status,notes,updated_at');
-  lines.push('(Use Download status CSV button for full machine-readable export.)');
-  return lines.join('\n');
 }
 
-async function copyText() {
-  const text = buildPlainTextUpdate();
-  try {
-    await navigator.clipboard.writeText(text);
-    toast('Copied plain-text update');
-  } catch (e) {
-    const ta = document.createElement('textarea');
-    ta.value = text; document.body.appendChild(ta); ta.select();
-    document.execCommand('copy'); ta.remove();
-    toast('Copied plain-text update');
+function updateDockMaps(day) {
+  const btn = document.getElementById('btnDockMaps');
+  const d = day || (focusDate ? findDay(focusDate) : null);
+  if (activeTab === 'all') {
+    // On All tab, map dock to today (or nearest)
+    const t = findDay(todayISO()) || nearestDay(todayISO());
+    const url = mapsUrlForDay(t);
+    if (url) {
+      btn.href = url;
+      btn.classList.remove('disabled');
+      btn.textContent = 'Maps route';
+    } else {
+      btn.href = '#';
+      btn.classList.add('disabled');
+      btn.textContent = 'No route';
+    }
+    return;
   }
+  const url = d ? mapsUrlForDay(d) : null;
+  if (url) {
+    btn.href = url;
+    btn.classList.remove('disabled');
+    btn.textContent = 'Maps route';
+  } else {
+    btn.href = '#';
+    btn.classList.add('disabled');
+    btn.textContent = 'No route';
+  }
+}
+
+function setTab(tab) {
+  activeTab = tab;
+  document.querySelectorAll('.tab').forEach(t => {
+    t.classList.toggle('active', t.dataset.tab === tab);
+  });
+  const focus = document.getElementById('panelFocus');
+  const all = document.getElementById('panelAll');
+  if (tab === 'all') {
+    focus.classList.remove('show');
+    all.classList.add('show');
+    renderAll();
+    updateDockMaps(null);
+  } else {
+    all.classList.remove('show');
+    focus.classList.add('show');
+    const today = todayISO();
+    const targetIso = tab === 'tomorrow' ? addDaysISO(today, 1) : today;
+    let day = findDay(targetIso);
+    if (!day && tab === 'today') day = nearestDay(today);
+    if (!day && tab === 'tomorrow') {
+      // show empty tomorrow if outside trip
+      document.getElementById('panelFocus').innerHTML =
+        `<div class="day-hero"><div class="label">${escapeHtml(targetIso)}</div>
+         <div class="title">No plan for tomorrow</div>
+         <div class="empty">Outside trip dates or no entry.</div></div>`;
+      focusDate = targetIso;
+      updateDockMaps(null);
+      return;
+    }
+    renderFocusDay(day);
+  }
+}
+
+function render() {
+  if (activeTab === 'all') renderAll();
+  else {
+    const day = focusDate ? findDay(focusDate) : findDay(todayISO());
+    if (day) renderFocusDay(day);
+    else setTab(activeTab);
+  }
+  updateStats();
+}
+
+function jsonp(url, timeoutMs) {
+  return new Promise((resolve, reject) => {
+    const cb = '_wbCb' + Date.now() + Math.floor(Math.random()*1e6);
+    const t = setTimeout(() => { cleanup(); reject(new Error('Sync timed out')); }, timeoutMs || 20000);
+    function cleanup() {
+      clearTimeout(t);
+      try { delete window[cb]; } catch(e) {}
+      if (s && s.parentNode) s.parentNode.removeChild(s);
+    }
+    window[cb] = (data) => { cleanup(); resolve(data); };
+    const s = document.createElement('script');
+    const join = url.includes('?') ? '&' : '?';
+    s.src = url + join + 'callback=' + cb;
+    s.onerror = () => { cleanup(); reject(new Error('Sync network error')); };
+    document.head.appendChild(s);
+  });
+}
+
+function applySheetRows(rows) {
+  let n = 0;
+  for (const r of rows) {
+    if (!r.code || !r.date) continue;
+    const status = ['done','skipped','pending','blocked'].includes(r.status) ? r.status : 'pending';
+    if (status === 'blocked') continue;
+    const k = branchKey(r.date, r.code);
+    state.branches[k] = {
+      status: status === 'blocked' ? 'pending' : status,
+      notes: r.notes || '',
+      skipReason: status==='skipped' ? (r.notes||'') : '',
+      updated_at: r.updated_at || new Date().toISOString()
+    };
+    n++;
+  }
+  saveState();
+  render();
+  return n;
+}
+
+function importCsvText(text) {
+  const rows = parseCsv(text);
+  let n = 0;
+  for (const r of rows) {
+    if (!r.code || !r.date) continue;
+    const status = ['done','skipped','pending'].includes(r.status) ? r.status : 'pending';
+    const k = branchKey(r.date, r.code);
+    state.branches[k] = {
+      status,
+      notes: r.notes || '',
+      skipReason: status==='skipped' ? (r.notes||'') : '',
+      updated_at: r.updated_at || new Date().toISOString()
+    };
+    n++;
+  }
+  saveState();
+  render();
+  toast('Imported ' + n + ' rows');
 }
 
 function parseCsv(text) {
@@ -645,72 +694,6 @@ function parseCsv(text) {
   return rows;
 }
 
-function importCsvText(text) {
-  const rows = parseCsv(text);
-  let n = 0;
-  for (const r of rows) {
-    if (!r.code || !r.date) continue;
-    const status = ['done','skipped','pending'].includes(r.status) ? r.status : 'pending';
-    const k = branchKey(r.date, r.code);
-    state.branches[k] = {
-      status,
-      notes: r.notes || '',
-      skipReason: status==='skipped' ? (r.notes||'') : '',
-      updated_at: r.updated_at || new Date().toISOString()
-    };
-    n++;
-  }
-  saveState();
-  renderDays();
-  toast('Imported ' + n + ' rows');
-}
-
-function jumpToday() {
-  const today = todayISO();
-  filterPhase = 'all';
-  renderChips();
-  renderDays();
-  const el = document.getElementById('day-' + today);
-  if (el) {
-    el.classList.add('open');
-    el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  } else {
-    // nearest upcoming
-    const next = TRIP_DATA.days.find(d => d.date >= today) || TRIP_DATA.days[TRIP_DATA.days.length-1];
-    const n = document.getElementById('day-' + next.date);
-    if (n) { n.classList.add('open'); n.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
-    toast('No exact today — jumped to nearest');
-  }
-}
-
-function resetAll() {
-  if (!confirm('Reset all done/skipped/notes on this device?')) return;
-  state = { branches: {}, dayNotes: {}, updatedAt: null };
-  localStorage.removeItem(STORAGE_KEY);
-  saveState();
-  renderDays();
-  toast('Progress reset');
-}
-
-
-function jsonp(url, timeoutMs) {
-  return new Promise((resolve, reject) => {
-    const cb = '_wbCb' + Date.now() + Math.floor(Math.random()*1e6);
-    const t = setTimeout(() => { cleanup(); reject(new Error('Sync timed out')); }, timeoutMs || 20000);
-    function cleanup() {
-      clearTimeout(t);
-      try { delete window[cb]; } catch(e) {}
-      if (s && s.parentNode) s.parentNode.removeChild(s);
-    }
-    window[cb] = (data) => { cleanup(); resolve(data); };
-    const s = document.createElement('script');
-    const join = url.includes('?') ? '&' : '?';
-    s.src = url + join + 'callback=' + cb;
-    s.onerror = () => { cleanup(); reject(new Error('Sync network error')); };
-    document.head.appendChild(s);
-  });
-}
-
 async function pullFromSheet() {
   toast('Pulling from Sheet…');
   try {
@@ -722,7 +705,6 @@ async function pullFromSheet() {
         return;
       }
     }
-    // Fallback: published CSV export (needs Sheet shared: anyone with link can view)
     const res = await fetch(SHEET.csvUrl + '&_ts=' + Date.now(), { cache: 'no-store' });
     if (!res.ok) throw new Error('CSV HTTP ' + res.status + ' — share Sheet as Anyone with the link can view');
     const text = await res.text();
@@ -734,26 +716,6 @@ async function pullFromSheet() {
   } catch (err) {
     toast(String(err.message || err));
   }
-}
-
-function applySheetRows(rows) {
-  let n = 0;
-  for (const r of rows) {
-    if (!r.code || !r.date) continue;
-    const status = ['done','skipped','pending','blocked'].includes(r.status) ? r.status : 'pending';
-    if (status === 'blocked') continue;
-    const k = branchKey(r.date, r.code);
-    state.branches[k] = {
-      status: status === 'blocked' ? 'pending' : status,
-      notes: r.notes || '',
-      skipReason: status==='skipped' ? (r.notes||'') : '',
-      updated_at: r.updated_at || new Date().toISOString()
-    };
-    n++;
-  }
-  saveState();
-  renderDays();
-  return n;
 }
 
 function buildStatusPayload() {
@@ -782,8 +744,7 @@ async function pushToSheet(opts) {
   try {
     if (!SHEET.syncUrl || SHEET.syncUrl.includes('REPLACE_')) {
       if (silent) return;
-      downloadCsv();
-      toast('Sync bridge not live yet — downloaded CSV to paste into Sheet');
+      toast('Sync bridge not configured');
       return;
     }
     _pushBusy = true;
@@ -806,40 +767,50 @@ async function pushToSheet(opts) {
   }
 }
 
+async function syncNow() {
+  await pushToSheet({ silent: true });
+  await pullFromSheet();
+}
 
-// init
-document.getElementById('metaSub').textContent =
-  TRIP_DATA.meta.travellers.join(' · ') + ' · Host ' + TRIP_DATA.meta.host +
-  ' · ' + TRIP_DATA.meta.coverage.sites + ' sites';
+function resetAll() {
+  if (!confirm('Reset all done/skipped/notes on this device?')) return;
+  state = { branches: {}, dayNotes: {}, updatedAt: null };
+  localStorage.removeItem(STORAGE_KEY);
+  saveState();
+  render();
+  toast('Progress reset');
+}
 
-document.getElementById('btnPullSheet').addEventListener('click', pullFromSheet);
-document.getElementById('btnPushSheet').addEventListener('click', pushToSheet);
-const btnExport = document.getElementById('btnExportSheet');
-if (btnExport) btnExport.addEventListener('click', downloadCsv);
-document.getElementById('btnJumpToday').addEventListener('click', jumpToday);
+// Tabs
+document.querySelectorAll('.tab').forEach(btn => {
+  btn.addEventListener('click', () => setTab(btn.dataset.tab));
+});
+
+document.getElementById('btnSync').addEventListener('click', syncNow);
 document.getElementById('btnMore').addEventListener('click', () => document.getElementById('moreModal').classList.add('show'));
 document.getElementById('btnCloseMore').addEventListener('click', () => document.getElementById('moreModal').classList.remove('show'));
 document.getElementById('moreModal').addEventListener('click', (e) => {
   if (e.target.id === 'moreModal') e.target.classList.remove('show');
 });
-document.getElementById('btnCopyText').addEventListener('click', copyText);
+document.getElementById('btnJumpAll').addEventListener('click', () => {
+  document.getElementById('moreModal').classList.remove('show');
+  setTab('all');
+});
+document.getElementById('btnPullOnly').addEventListener('click', () => {
+  document.getElementById('moreModal').classList.remove('show');
+  pullFromSheet();
+});
+document.getElementById('btnPushOnly').addEventListener('click', () => {
+  document.getElementById('moreModal').classList.remove('show');
+  pushToSheet();
+});
 document.getElementById('btnReset').addEventListener('click', resetAll);
-document.getElementById('btnImportCsv').addEventListener('click', () => document.getElementById('fileImport').click());
-document.getElementById('fileImport').addEventListener('change', async (e) => {
-  const file = e.target.files && e.target.files[0];
-  if (!file) return;
-  try { importCsvText(await file.text()); }
-  catch (err) { toast('Import failed: ' + err.message); }
-  e.target.value = '';
+document.getElementById('btnDockMaps').addEventListener('click', (e) => {
+  if (e.currentTarget.classList.contains('disabled')) e.preventDefault();
 });
 
-renderChips();
-renderDays();
+setTab('today');
 updateStats();
-const boot = document.getElementById('bootNote');
-if (boot) boot.innerHTML = 'Tick visits here — the live Sheet updates automatically. Planner reads the Sheet to reshape the trip.';
-// Auto-open today
-setTimeout(jumpToday, 100);
 </script>
 </body>
 </html>
