@@ -621,6 +621,74 @@ main { padding: 16px 14px 28px; max-width: 640px; margin: 0 auto; }
 .add-stop-row-code { color: var(--muted); font: 600 0.72rem ui-monospace, SFMono-Regular, Menlo, monospace; }
 .add-stop-row-day { margin-top: 3px; color: var(--muted); font-size: 0.78rem; }
 .add-stop-empty { padding: 12px 2px; color: var(--muted); font-size: 0.88rem; }
+
+.add-stop-filter {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  margin: 0 0 10px;
+  padding: 4px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--bg) 55%, var(--surface-solid));
+  border: 1px solid var(--border);
+}
+.add-stop-filter button {
+  border: 0;
+  border-radius: 999px;
+  min-height: 36px;
+  padding: 6px 10px;
+  background: transparent;
+  color: var(--muted);
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 650;
+  cursor: pointer;
+}
+.add-stop-filter button.active {
+  background: var(--accent-soft);
+  color: var(--accent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 35%, transparent);
+}
+.add-stop-note {
+  margin: -4px 0 10px;
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+.add-stop-row-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 6px;
+}
+.add-stop-open-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+.add-stop-open-pill.open {
+  background: var(--done-soft);
+  color: var(--done);
+}
+.add-stop-open-pill.closed {
+  background: var(--skip-soft);
+  color: var(--skip);
+}
+.add-stop-open-pill.na {
+  background: color-mix(in srgb, var(--muted) 18%, transparent);
+  color: var(--muted);
+}
+.add-stop-row-sub {
+  color: var(--muted);
+  font-size: 0.76rem;
+  line-height: 1.35;
+}
+
 .hidden { display: none !important; }
 </style>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
@@ -675,6 +743,11 @@ main { padding: 16px 14px 28px; max-width: 640px; margin: 0 auto; }
   <div class="modal">
     <h2>Add stop</h2>
     <p id="addStopHint">Choose a pending branch to add to this day.</p>
+    <div class="add-stop-filter" id="addStopFilter" role="tablist" aria-label="Filter pending stops">
+      <button type="button" class="active" data-filter="open">Open nearby</button>
+      <button type="button" data-filter="all">All pending</button>
+    </div>
+    <div class="add-stop-note" id="addStopNote" hidden></div>
     <input class="add-stop-search" id="addStopSearch" type="search" placeholder="Search name or code" autocomplete="off"/>
     <div class="add-stop-list" id="addStopList"></div>
     <div class="row" style="margin-top:12px"><button class="btn" id="btnCloseAddStop" type="button">Close</button></div>
@@ -683,6 +756,8 @@ main { padding: 16px 14px 28px; max-width: 640px; margin: 0 auto; }
 
 <script>
 const TRIP_DATA = {"meta":{"title":"Wellbeing Branding Trip","travellers":["Yin Hao Lui (Hugo)","Yi Hui Chee"],"host":"Soon Keat Chan","flights":{"arrive":"MH4 LHR T4 Tue 29 Sep 2026 16:35","depart":"MH3 LHR T4 Wed 28 Oct 2026 10:25","pnr":"D6JQVW"},"phases":[{"id":"hampshire","label":"Hampshire","range":"29 Sep – 6 Oct"},{"id":"midlands","label":"Midlands","range":"7 – 11 Oct"},{"id":"devon","label":"Devon","range":"12 – 16 Oct"},{"id":"east-anglia","label":"East Anglia","range":"17 – 25 Oct"},{"id":"exit","label":"Exit","range":"26 – 28 Oct"}],"excluded":[{"code":"WP059","name":"Staploe","reason":"Not ready yet"},{"code":"AP001","name":"Poole","reason":"Out of branding scope"}],"hub":"Coventry 8 Prior Deram Walk (overnight base only, not a visit)","coverage":{"sites":62,"wp":59,"automeds":3}},"days":[{"id":"2026-09-29","date":"2026-09-29","dow":"Tue","label":"Tue 29 Sep","title":"Arrive LHR → Stockbridge","phase":"hampshire","kind":"arrive","notes":"MH4 land LHR T4 16:35 → meal → drive to Stockbridge (~1.5–2h). Settle at Stockbridge. No branch visits this evening.","branches":[]},{"id":"2026-09-30","date":"2026-09-30","dow":"Wed","label":"Wed 30 Sep","title":"Stockbridge / Winchester / Whitchurch","phase":"hampshire","kind":"visit","notes":"Local Stockbridge cluster. Overnight Stockbridge. Plan WP014 around lunch break 1–2PM.","branches":[{"code":"WP014","name":"Stockbridge","address":"High St, Stockbridge SO20 6EX","pc":"SO20 6EX"},{"code":"WP035","name":"Winchester","address":"155 High St, Winchester SO23 9BA","pc":"SO23 9BA"},{"code":"WP026","name":"Whitchurch","address":"7 Newbury St, Whitchurch RG28 7DW","pc":"RG28 7DW"}]},{"id":"2026-10-01","date":"2026-10-01","dow":"Thu","label":"Thu 1 Oct","title":"Alton / Hartley Wintney / Fleet Linkway","phase":"hampshire","kind":"visit","notes":"NE Hants weekday cluster. WP006 Fleet Richmond Surgery reserved for Sun 4 Oct only. Overnight Stockbridge / Fleet area.","branches":[{"code":"WP022","name":"Alton","address":"68 High Street, Alton GU34 1ET","pc":"GU34 1ET"},{"code":"WP036","name":"Hartley Wintney","address":"74 High St, Hartley Wintney, Hook RG27 8NS","pc":"RG27 8NS"},{"code":"WP042","name":"Wellbeing + Fleet","address":"5 Linkway Parade, Fleet GU52 7UL","pc":"GU52 7UL"}]},{"id":"2026-10-02","date":"2026-10-02","dow":"Fri","label":"Fri 2 Oct","title":"Dorset Automeds + Sturminster","phase":"hampshire","kind":"visit","notes":"Weekday required for AP003/AP004 and WP005 (all Sat OFF). Westbound: Ringwood → Sturminster → Dorchester. Overnight Stockbridge / return south.","branches":[{"code":"AP003","name":"Ringwood","address":"Unit 2 Hoburne Enterprise Park, Embankment Way, Ringwood, Hampshire BH24 1WL","pc":"BH24 1WL"},{"code":"WP005","name":"Sturminster Marshall","address":"66 High Street, Sturminster Marshall, Wimborne, Dorset BH21 4AY","pc":"BH21 4AY"},{"code":"AP004","name":"Dorchester","address":"Unit 52F, Enterprise Park, Piddlehinton, Dorchester DT2 7UA","pc":"DT2 7UA"}]},{"id":"2026-10-03","date":"2026-10-03","dow":"Sat","label":"Sat 3 Oct","title":"Blackfield + Surrey edge","phase":"hampshire","kind":"visit","notes":"New Forest then Surrey hop; evening toward Fleet ready for Sunday WP006. Overnight Fleet / Stockbridge.","branches":[{"code":"WP030","name":"Blackfield","address":"191 Hampton Lane, Blackfield, Southampton, Hampshire, SO45 1XA","pc":"SO45 1XA"},{"code":"WP024","name":"Shottermill","address":"5-7 Junction Place, Shottermill, Haslemere, Surrey GU27 1LE","pc":"GU27 1LE"},{"code":"WP055","name":"Chiddingfold","address":"The Green, Chiddingfold, Godalming GU8 4TU","pc":"GU8 4TU"}]},{"id":"2026-10-04","date":"2026-10-04","dow":"Sun","label":"Sun 4 Oct","title":"WP006 Fleet (stay south)","phase":"hampshire","kind":"visit","notes":"WP006 only appearance. Sunday hours 10AM–5PM. Do not drive Midlands tonight — Hampshire phase continues. Overnight Stockbridge / Fleet.","branches":[{"code":"WP006","name":"Fleet","address":"The Richmond Surgery, Richmond Close, Fleet, Hampshire GU52 7US","pc":"GU52 7US"}]},{"id":"2026-10-05","date":"2026-10-05","dow":"Mon","label":"Mon 5 Oct","title":"Gosport Automeds + Sherborne","phase":"hampshire","kind":"visit","notes":"Two-stop day. Morning Solent Automeds, afternoon west to Sherborne (~1.5–1.75h). Overnight Stockbridge or Sherborne area ready for Oxford Tue.","branches":[{"code":"AP002","name":"Gosport","address":"Albion A6, Daedalus park, Daedalus drive, Lee-on-the-Solent, Hampshire PO13 9FX","pc":"PO13 9FX"},{"code":"WP058","name":"Sherborne","address":"77 Cheap St, Sherborne DT9 3BA","pc":"DT9 3BA"}]},{"id":"2026-10-06","date":"2026-10-06","dow":"Tue","label":"Tue 6 Oct","title":"Oxford corridor → drive Coventry","phase":"hampshire","kind":"visit","notes":"Stockbridge → Oxford ~1h. After visits: evening drive Oxford → Coventry (~1–1.25h). Overnight Coventry HUB (base only).","branches":[{"code":"WP020","name":"Oxford","address":"190 Abingdon Rd, Oxford OX1 4RA","pc":"OX1 4RA"},{"code":"WP028","name":"Abingdon","address":"7 Peachcroft Centre, Abingdon, Oxfordshire, OX14 2QA","pc":"OX14 2QA"}]},{"id":"2026-10-07","date":"2026-10-07","dow":"Wed","label":"Wed 7 Oct","title":"Coventry + Market Harborough + Sharnbrook","phase":"midlands","kind":"visit","notes":"4-stop Midlands day. Route: Tile Hill pair → Market Harborough (~45 min) → Sharnbrook (~55 min) → return Coventry (~1h). Overnight Coventry.","branches":[{"code":"WP003","name":"Coventry","address":"298 Tile Hill Lane, Coventry, West Midlands CV4 9DR","pc":"CV4 9DR"},{"code":"WP016","name":"Tile Hill","address":"343 Tile Hill Ln, Coventry CV4 9DU","pc":"CV4 9DU"},{"code":"WP065","name":"Market Harborough","address":"9 Coventry Rd, Market Harborough LE16 9BX","pc":"LE16 9BX"},{"code":"WP001","name":"Sharnbrook","address":"61A High Street, Sharnbrook, Bedfordshire MK44 1PB","pc":"MK44 1PB"}]},{"id":"2026-10-08","date":"2026-10-08","dow":"Thu","label":"Thu 8 Oct","title":"Alfreton / Somercotes / Keyworth","phase":"midlands","kind":"visit","notes":"Derbys / Notts loop; return Coventry overnight.","branches":[{"code":"WP007","name":"Alfreton","address":"Greenhill Prim Care Ctr, Riddings, Derbyshire DE55 1LU","pc":"DE55 1LU"},{"code":"WP050","name":"Somercotes","address":"40 Nottingham Rd, Somercotes, Alfreton DE55 4JJ","pc":"DE55 4JJ"},{"code":"WP063","name":"Keyworth","address":"2 The Square, Keyworth, Nottingham NG12 5JT","pc":"NG12 5JT"}]},{"id":"2026-10-09","date":"2026-10-09","dow":"Fri","label":"Fri 9 Oct","title":"Birmingham B6 cluster (Roots / Medichem / Villa)","phase":"midlands","kind":"visit","notes":"All three B6 sites adjacent (~30–40 min from Coventry). Weekday hours (all Sat OFF). Overnight Coventry / Birmingham ready for board weekend.","branches":[{"code":"WP011","name":"Roots","address":"168 Trinity Rd, Birmingham B6 6HL / B6 6HZ","pc":"B6 6HZ"},{"code":"WP012","name":"Medichem","address":"51 Prestbury Rd, Birmingham B6 6EH","pc":"B6 6EH"},{"code":"WP013","name":"Villa","address":"66 Victoria Road, Birmingham B6 5HA","pc":"B6 5HA"}]},{"id":"2026-10-10","date":"2026-10-10","dow":"Sat","label":"Sat 10 Oct","title":"Wellbeing Annual Board Meeting only","phase":"midlands","kind":"blocked","blockReason":"Board meeting — no branch visits","notes":"Wellbeing Annual Board Meeting (Head Office). No branch visits. WP011/012/013 already done Fri 9. Overnight Coventry / Birmingham.","branches":[]},{"id":"2026-10-11","date":"2026-10-11","dow":"Sun","label":"Sun 11 Oct","title":"Pharmacy Show (NEC Birmingham) only","phase":"midlands","kind":"blocked","blockReason":"Pharmacy Show NEC — no branch visits","notes":"Take branding team as observers at Pharmacy Show NEC. No branch visits. Overnight Coventry / Birmingham.","branches":[]},{"id":"2026-10-12","date":"2026-10-12","dow":"Mon","label":"Mon 12 Oct","title":"Travel Midlands → East Devon","phase":"devon","kind":"visit","notes":"Coventry → Exeter via M5 (~3.5–4h). Afternoon after check-in: Cranbrook.","branches":[{"code":"WP049","name":"Cranbrook","address":"151 Younghayes Road, Cranbrook EX5 7DR","pc":"EX5 7DR"}]},{"id":"2026-10-13","date":"2026-10-13","dow":"Tue","label":"Tue 13 Oct","title":"Exe / Teign cluster","phase":"devon","kind":"visit","notes":"Exmouth pair + Bishopsteignton.","branches":[{"code":"WP018","name":"Exmouth","address":"95 Exeter Rd, Exmouth EX8 1QD","pc":"EX8 1QD"},{"code":"WP032","name":"Withycombe Village Rd","address":"120 Withycombe Village Rd, Exmouth EX8 3AN","pc":"EX8 3AN"},{"code":"WP021","name":"Bishopsteignton","address":"50 Fore St, Bishopsteignton, Teignmouth TQ14 9QZ","pc":"TQ14 9QZ"}]},{"id":"2026-10-14","date":"2026-10-14","dow":"Wed","label":"Wed 14 Oct","title":"Teignmouth / Dartmouth","phase":"devon","kind":"visit","notes":"Teignmouth then Dartmouth pair.","branches":[{"code":"WP039","name":"Teignmouth","address":"4 Den Rd, Teignmouth TQ14 8AJ","pc":"TQ14 8AJ"},{"code":"WP031","name":"Dartmouth","address":"31 Victoria Road, Dartmouth, Devon, TQ6 9RT","pc":"TQ6 9RT"},{"code":"WP033","name":"Dartmouth Medical Center","address":"Dartmouth Health & Wellbeing Centre, Wessex Way, Dartmouth, Devon TQ6 0JL","pc":"TQ6 0JL"}]},{"id":"2026-10-15","date":"2026-10-15","dow":"Thu","label":"Thu 15 Oct","title":"Kingsbridge / Plymouth","phase":"devon","kind":"visit","notes":"South Devon pair.","branches":[{"code":"WP052","name":"Kingsbridge","address":"The Quay, Kingsbridge TQ7 1EB","pc":"TQ7 1EB"},{"code":"WP053","name":"Plymouth","address":"97 King St, Stonehouse, Plymouth PL1 5JA","pc":"PL1 5JA"}]},{"id":"2026-10-16","date":"2026-10-16","dow":"Fri","label":"Fri 16 Oct","title":"Travel only: Devon → Ipswich","phase":"devon","kind":"travel","notes":"Exeter / Plymouth to Ipswich full transfer day (~5–6h). No branch visits. Leave Devon morning; overnight Ipswich.","branches":[]},{"id":"2026-10-17","date":"2026-10-17","dow":"Sat","label":"Sat 17 Oct","title":"East Suffolk sat-open loop","phase":"east-anglia","kind":"visit","notes":"Overnight Ipswich after Friday drive-only transfer. WP061 Debenham Sat to ~1PM — morning.","branches":[{"code":"WP008","name":"Cox Lane","address":"Wellbeing Pharmacy, 8 Cox Lane, Ipswich IP4 1HT","pc":"IP4 1HT"},{"code":"WP056","name":"Framlingham","address":"32 Market Hill, Framlingham, Woodbridge IP13 9AY","pc":"IP13 9AY"},{"code":"WP061","name":"Debenham","address":"Wellbeing Pharmacy, 1 Little Back Ln, Debenham, Stowmarket IP14 6RB","pc":"IP14 6RB"}]},{"id":"2026-10-18","date":"2026-10-18","dow":"Sun","label":"Sun 18 Oct","title":"Littleport (Sunday-open)","phase":"east-anglia","kind":"visit","notes":"Most EA pharmacies Sunday OFF. Overnight Ely / Littleport.","branches":[{"code":"WP010","name":"Littleport","address":"Wellbeing Pharmacy, 2 Parsons Lane, Littleport CB6 1JU","pc":"CB6 1JU"}]},{"id":"2026-10-19","date":"2026-10-19","dow":"Mon","label":"Mon 19 Oct","title":"Ely / Littleport / Dereham / Soham","phase":"east-anglia","kind":"visit","notes":"Finish Cambs-east cluster after Sunday Littleport. WP037 Dereham Sat to ~1PM — prefer weekday morning.","branches":[{"code":"WP027","name":"St. Georges Pharmacy","address":"St. Georges Pharmacy, Parsons Lane, Littleport, Cambridgeshire, CB6 1JU","pc":"CB6 1JU"},{"code":"WP025","name":"Ely Princess of Wales Hospital","address":"Wellbeing Pharmacy, Princess Of Wales Hospital, Lynn Road, Ely CB6 1DN","pc":"CB6 1DN"},{"code":"WP037","name":"Dereham","address":"Wellbeing Pharmacy, 2 Chapel Ln, Toftwood, Dereham NR19 1LD","pc":"NR19 1LD"},{"code":"WP034","name":"Soham","address":"Wellbeing Pharmacy, 31 High St, Soham, Mere, Ely CB7 5HA","pc":"CB7 5HA"}]},{"id":"2026-10-20","date":"2026-10-20","dow":"Tue","label":"Tue 20 Oct","title":"Cambs west day-trip","phase":"east-anglia","kind":"visit","notes":"From Ipswich: St Neots / Huntingdon / Chatteris. Overnight Ipswich.","branches":[{"code":"WP047","name":"St Neots","address":"Wellbeing Pharmacy, 14 Huntingdon St, St Neots PE19 1BQ","pc":"PE19 1BQ"},{"code":"WP038","name":"Huntingdon","address":"Wellbeing Pharmacy, 72a Ermine St, Huntingdon PE29 3EZ","pc":"PE29 3EZ"},{"code":"WP040","name":"Chatteris","address":"Wellbeing Pharmacy, George Clare Surgery, Swan Dr, Chatteris PE16 6EX","pc":"PE16 6EX"}]},{"id":"2026-10-21","date":"2026-10-21","dow":"Wed","label":"Wed 21 Oct","title":"Ipswich urban","phase":"east-anglia","kind":"visit","notes":"4-stop Ipswich urban (adjacent sites).","branches":[{"code":"WP004","name":"Ipswich Chesterfield Drive","address":"Wellbeing Pharmacy, 29 Chesterfield Drive, Ipswich, Suffolk IP1 6DW","pc":"IP1 6DW"},{"code":"WP019","name":"Ipswich Reynolds Rd","address":"Wellbeing Pharmacy, 13 Reynolds Rd, Ipswich IP3 0JL","pc":"IP3 0JL"},{"code":"WP041","name":"Kesgrave","address":"Wellbeing Pharmacy, 34A Penzance Rd, Kesgrave, Ipswich IP5 1JS","pc":"IP5 1JS"},{"code":"WP043","name":"Ipswich Orchard St","address":"Wellbeing Pharmacy, Orchard St Medical Centre, Orchard Street, Ipswich IP4 2PU","pc":"IP4 2PU"}]},{"id":"2026-10-22","date":"2026-10-22","dow":"Thu","label":"Thu 22 Oct","title":"Ipswich west + Eye / Diss / Norwich","phase":"east-anglia","kind":"visit","notes":"WP060 Eye Sat to ~1PM — morning preferred.","branches":[{"code":"WP048","name":"Ipswich Norwich Rd","address":"Wellbeing Pharmacy, 416 Norwich Road, Ipswich IP1 5DX","pc":"IP1 5DX"},{"code":"WP060","name":"Eye","address":"Wellbeing Pharmacy, 5 Broad St, Eye IP23 7AF","pc":"IP23 7AF"},{"code":"WP046","name":"Diss","address":"Wellbeing Pharmacy, 11 Market Place, Diss IP22 4AB","pc":"IP22 4AB"},{"code":"WP029","name":"Oak Street","address":"Wellbeing Pharmacy, 2 Mandela Close, Oak Street, Norwich, Norfolk, NR3 3BA","pc":"NR3 3BA"}]},{"id":"2026-10-23","date":"2026-10-23","dow":"Fri","label":"Fri 23 Oct","title":"Norwich + Broads / Yarmouth","phase":"east-anglia","kind":"visit","notes":"WP051 Norwich Noble Cl Sat to ~1PM — morning preferred.","branches":[{"code":"WP051","name":"Norwich Noble Cl","address":"29 Noble Cl, Norwich NR7 9RJ","pc":"NR7 9RJ"},{"code":"WP015","name":"Wroxham","address":"Wellbeing Pharmacy, Station Rd, Hoveton, Norwich NR12 8UR","pc":"NR12 8UR"},{"code":"WP045","name":"Coltishall","address":"Wellbeing Pharmacy, 30 High St, Coltishall, Norwich NR12 7AA","pc":"NR12 7AA"},{"code":"WP017","name":"Belton","address":"Wellbeing Pharmacy, 19-21 Station Rd N, Belton, Great Yarmouth NR31 9NF","pc":"NR31 9NF"},{"code":"WP023","name":"Caister-on-Sea","address":"Wellbeing Pharmacy, 44 West Rd, Caister-on-Sea, Great Yarmouth NR30 5AQ","pc":"NR30 5AQ"}]},{"id":"2026-10-24","date":"2026-10-24","dow":"Sat","label":"Sat 24 Oct","title":"London: Romford + Southfields","phase":"east-anglia","kind":"visit","notes":"From Ipswich day-trip (or overnight London). Both open Saturday. Not on 26–27 Oct. WP009 Romford Sat to ~1PM — morning. Return Ipswich evening. Overnight Ipswich.","branches":[{"code":"WP009","name":"Romford","address":"Wellbeing Pharmacy, 1207 High Road, Chadwell Heath, Romford,Essex RM6 4AL","pc":"RM6 4AL"},{"code":"WP002","name":"Southfields","address":"Wellbeing Pharmacy, 13 Replingham Road, Southfields, London SW18 5LT","pc":"SW18 5LT"}]},{"id":"2026-10-25","date":"2026-10-25","dow":"Sun","label":"Sun 25 Oct","title":"Proposal prep + read-out (Ipswich)","phase":"east-anglia","kind":"prep","notes":"Deck / territories workshop in the morning; formal branding proposal read-out afternoon/evening in Ipswich. Pharmacies closed Sunday — no branch visits.","branches":[]},{"id":"2026-10-26","date":"2026-10-26","dow":"Mon","label":"Mon 26 Oct","title":"Clear (buffer)","phase":"exit","kind":"clear","blockReason":"Clear day — buffer / rest / pack","notes":"No branches, no read-out. Buffer / rest / pack. Overnight Ipswich (or start easy move toward London if preferred).","branches":[]},{"id":"2026-10-27","date":"2026-10-27","dow":"Tue","label":"Tue 27 Oct","title":"LHR hotel · host flies Malaysia","phase":"exit","kind":"clear","blockReason":"Clear — LHR hotel / host departs","notes":"No branch visits. Ipswich → Heathrow. Host checks Hugo & Yi Hui into LHR airport hotel. Host flies Malaysia this day. Branding team overnight Heathrow hotel.","branches":[]},{"id":"2026-10-28","date":"2026-10-28","dow":"Wed","label":"Wed 28 Oct","title":"Team self-depart","phase":"exit","kind":"depart","notes":"Hotel → LHR T4 on their own. MH3 10:25 LHR → KUL (PNR D6JQVW). Host already in Malaysia. No host.","branches":[]}]};
+
+const BRANCH_META = {"AP002":{"lat":50.810143,"lng":-1.203609,"hours":{"mon":"09:00 - 17:00","tue":"09:00 - 17:00","wed":"09:00 - 17:00","thu":"09:00 - 17:00","fri":"09:00 - 17:00","sat":"OFF","sun":"OFF"},"pc":"PO13 9FX"},"AP003":{"lat":50.841177,"lng":-1.779749,"hours":{"mon":"09:00 - 17:00","tue":"09:00 - 17:00","wed":"09:00 - 17:00","thu":"09:00 - 17:00","fri":"09:00 - 17:00","sat":"OFF","sun":"OFF"},"pc":"BH24 1WL"},"AP004":{"lat":50.768292,"lng":-2.394101,"hours":{"mon":"09:00 - 17:00","tue":"09:00 - 17:00","wed":"09:00 - 17:00","thu":"09:00 - 17:00","fri":"09:00 - 17:00","sat":"OFF","sun":"OFF"},"pc":"DT2 7UA"},"WP001":{"lat":52.226338,"lng":-0.544546,"hours":{"mon":"09:00 - 18:00","tue":"09:00 - 18:00","wed":"09:00 - 18:00","thu":"09:00 - 18:00","fri":"09:00 - 18:00","sat":"OFF","sun":"OFF"},"pc":"MK44 1PB"},"WP002":{"lat":51.444986,"lng":-0.20507,"hours":{"mon":"9AM - 7PM","tue":"9AM - 7PM","wed":"9AM - 7PM","thu":"9AM - 7PM","fri":"9AM - 7PM","sat":"9AM - 5PM","sun":"OFF"},"pc":"SW18 5LT"},"WP003":{"lat":52.404339,"lng":-1.560508,"hours":{"mon":"8.30AM - 2PM, 3PM - 9PM","tue":"8.30AM - 2PM, 3PM - 9PM","wed":"8.30AM - 2PM, 3PM - 9PM","thu":"8.30AM - 2PM, 3PM - 9PM","fri":"8.30AM - 2PM, 3PM - 9PM","sat":"1PM - 4PM, 5PM - 9PM","sun":"8AM - 9.45PM"},"pc":"CV4 9DR"},"WP004":{"lat":52.076245,"lng":1.132042,"hours":{"mon":"9AM-6:30PM","tue":"9AM-6:30PM","wed":"9AM-6:30PM","thu":"9AM-6:30PM","fri":"9AM-6:30PM","sat":"OFF","sun":"OFF"},"pc":"IP1 6DW"},"WP005":{"lat":50.796066,"lng":-2.073539,"hours":{"mon":"9AM - 6PM","tue":"9AM - 6PM","wed":"9AM - 1PM","thu":"9AM - 6PM","fri":"9AM - 6PM","sat":"OFF","sun":"OFF"},"pc":"BH21 4AY"},"WP006":{"lat":51.269324,"lng":-0.841077,"hours":{"mon":"8AM - 2PM, 3PM - 9PM","tue":"8AM - 2PM, 3PM - 9PM","wed":"8AM - 2PM, 3PM - 9PM","thu":"8AM - 2PM, 3PM - 9PM","fri":"8AM - 2PM, 3PM - 9PM","sat":"12:30PM - 4PM, 5PM - 9PM","sun":"10AM - 5PM"},"pc":"GU52 7US"},"WP007":{"lat":53.074367,"lng":-1.372224,"hours":{"mon":"8:30am–1pm, 2–9pm","tue":"8:30am–1pm, 2–9pm","wed":"8:30am–1pm, 2–9pm","thu":"8:30am–1pm, 2–9pm","fri":"8:30am–1pm, 2–9pm","sat":"9am–1pm, 2–9pm","sun":"9am–4:30pm"},"pc":"DE55 1LU"},"WP008":{"lat":52.056969,"lng":1.158384,"hours":{"mon":"8.45am–5.30pm","tue":"8.45am–5pm","wed":"8.45am–5pm","thu":"8.45am–5pm","fri":"8.45am–5pm","sat":"8.45am–4pm","sun":"OFF"},"pc":"IP4 1HT"},"WP009":{"lat":51.570623,"lng":0.128788,"hours":{"mon":"9AM - 6PM","tue":"9AM - 6PM","wed":"9AM - 6PM","thu":"9AM - 6PM","fri":"9AM - 6PM","sat":"9AM - 1PM","sun":"OFF"},"pc":"RM6 4AL"},"WP010":{"lat":52.458072,"lng":0.299,"hours":{"mon":"9AM - 1PM, 2PM - 9PM","tue":"9AM - 1PM, 2PM - 9PM","wed":"9AM - 1PM, 2PM - 9PM","thu":"9AM - 1PM, 2PM - 9PM","fri":"9AM - 1PM, 2PM - 9PM","sat":"9AM - 1PM, 2PM - 9PM","sun":"9AM - 9PM"},"pc":"CB6 1JU"},"WP011":{"lat":52.508118,"lng":-1.889451,"hours":{"mon":"9AM - 6PM","tue":"9AM - 6PM","wed":"9AM - 6PM","thu":"9AM - 6PM","fri":"9AM - 6PM","sat":"OFF","sun":"OFF"},"pc":"B6 6HZ"},"WP012":{"lat":52.505621,"lng":-1.891372,"hours":{"mon":"9AM - 6PM","tue":"9AM - 6PM","wed":"9AM - 6PM","thu":"9AM - 6PM","fri":"9AM - 6PM","sat":"OFF","sun":"OFF"},"pc":"B6 6EH"},"WP013":{"lat":52.502677,"lng":-1.896638,"hours":{"mon":"9AM - 6PM","tue":"9AM - 6PM","wed":"9AM - 6PM","thu":"9AM - 6PM","fri":"9AM - 6PM","sat":"OFF","sun":"OFF"},"pc":"B6 5HA"},"WP014":{"lat":51.114508,"lng":-1.494842,"hours":{"mon":"9AM - 1PM, 2PM - 6PM","tue":"9AM - 1PM, 2PM - 6PM","wed":"9AM - 1PM, 2PM - 6PM","thu":"9AM - 1PM, 2PM - 6PM","fri":"9AM - 1PM, 2PM - 6PM","sat":"9AM - 1PM, 2PM- 5PM","sun":"OFF"},"pc":"SO20 6EX"},"WP015":{"lat":52.713863,"lng":1.409172,"hours":{"mon":"9AM - 1PM, 2PM - 6PM","tue":"9AM - 1PM, 2PM - 6PM","wed":"9AM - 1PM, 2PM - 6PM","thu":"9AM - 1PM, 2PM - 6PM","fri":"9AM - 1PM, 2PM - 6PM","sat":"OFF","sun":"OFF"},"pc":"NR12 8UR"},"WP016":{"lat":52.403702,"lng":-1.563336,"hours":{"mon":"8:30AM - 6PM","tue":"8:30AM - 6PM","wed":"8:30AM - 6PM","thu":"8:30AM - 6PM","fri":"8:30AM - 6PM","sat":"9AM - 5:30PM","sun":"OFF"},"pc":"CV4 9DU"},"WP017":{"lat":52.566298,"lng":1.65408,"hours":{"mon":"9AM - 6PM","tue":"9AM - 6PM","wed":"9AM - 6PM","thu":"9AM - 6PM","fri":"9AM - 6PM","sat":"OFF","sun":"OFF"},"pc":"NR31 9NF"},"WP018":{"lat":50.624195,"lng":-3.411132,"hours":{"mon":"9AM - 12PM, 1PM - 6PM","tue":"9AM - 12PM, 1PM - 6PM","wed":"9AM - 12PM, 1PM - 6PM","thu":"9AM - 12PM, 1PM - 6PM","fri":"9AM - 12PM, 1PM - 6PM","sat":"OFF","sun":"OFF"},"pc":"EX8 1QD"},"WP019":{"lat":52.035587,"lng":1.179888,"hours":{"mon":"9am–5.30pm","tue":"9am–5.30pm","wed":"9am–5.30pm","thu":"9am–5.30pm","fri":"9am–5.30pm","sat":"OFF","sun":"OFF"},"pc":"IP3 0JL"},"WP020":{"lat":51.739676,"lng":-1.253804,"hours":{"mon":"9am–1:30pm, 2.00pm–5:30pm","tue":"9am–1:30pm, 2.00pm–5:30pm","wed":"9am–1:30pm, 2.00pm–5:30pm","thu":"9am–1:30pm, 2.00pm–5:30pm","fri":"9am–1:30pm, 2.00pm–5:30pm","sat":"OFF","sun":"OFF"},"pc":"OX1 4RA"},"WP021":{"lat":50.553638,"lng":-3.543274,"hours":{"mon":"8:45am–1pm, 2–6pm","tue":"8:45am–1pm, 2–6pm","wed":"8:45am–1pm","thu":"8:45am–1pm, 2–5:30pm","fri":"8:45am–1pm, 2–5:30pm","sat":"8:45 am - 12:30 pm","sun":"OFF"},"pc":"TQ14 9QZ"},"WP022":{"lat":51.148265,"lng":-0.976717,"hours":{"mon":"9AM - 6PM","tue":"9AM - 6PM","wed":"9AM - 6PM","thu":"9AM - 6PM","fri":"9AM - 6PM","sat":"OFF","sun":"OFF"},"pc":"GU34 1ET"},"WP023":{"lat":52.647596,"lng":1.724953,"hours":{"mon":"8:30AM - 6PM","tue":"8:30AM - 6PM","wed":"8:30AM - 6PM","thu":"8:30AM - 6PM","fri":"8:30AM - 6PM","sat":"OFF","sun":"OFF"},"pc":"NR30 5AQ"},"WP024":{"lat":51.087638,"lng":-0.733563,"hours":{"mon":"9AM - 6PM","tue":"9AM - 6PM","wed":"9AM - 6PM","thu":"9AM - 6PM","fri":"9AM - 6PM","sat":"9AM - 5:30PM","sun":"OFF"},"pc":"GU27 1LE"},"WP025":{"lat":52.413145,"lng":0.275488,"hours":{"mon":"9AM - 6:30PM","tue":"9AM - 6:30PM","wed":"9AM - 6:30PM","thu":"9AM - 6:30PM","fri":"9AM - 6:30PM","sat":"OFF","sun":"OFF"},"pc":"CB6 1DN"},"WP026":{"lat":51.230488,"lng":-1.33905,"hours":{"mon":"9AM - 6.30PM","tue":"9AM - 6.30PM","wed":"9AM - 6.30PM","thu":"9AM - 6.30PM","fri":"9AM - 6.30PM","sat":"9AM - 12PM","sun":"OFF"},"pc":"RG28 7DW"},"WP027":{"lat":52.458072,"lng":0.299,"hours":{"mon":"9AM - 6PM","tue":"9AM - 6PM","wed":"9AM - 6PM","thu":"9AM - 6PM","fri":"9AM - 6PM","sat":"9AM - 5PM","sun":"OFF"},"pc":"CB6 1JU"},"WP028":{"lat":51.684607,"lng":-1.26582,"hours":{"mon":"9AM - 6.30PM","tue":"9AM - 6.30PM","wed":"9AM - 6.30PM","thu":"9AM - 6.30PM","fri":"9AM - 6.30PM","sat":"9AM - 2PM","sun":"OFF"},"pc":"OX14 2QA"},"WP029":{"lat":52.634219,"lng":1.288438,"hours":{"mon":"9AM - 1PM, 2PM - 6PM","tue":"9AM - 1PM, 2PM - 6PM","wed":"9AM - 1PM, 2PM - 6PM","thu":"9AM - 1PM, 2PM - 6PM","fri":"9AM - 1PM, 2PM - 6PM","sat":"OFF","sun":"OFF"},"pc":"NR3 3BA"},"WP030":{"lat":50.818949,"lng":-1.373442,"hours":{"mon":"8:30AM - 6PM","tue":"8:30AM - 6PM","wed":"8:30AM - 6PM","thu":"8:30AM - 6PM","fri":"8:30AM - 6PM","sat":"9AM - 5PM","sun":"OFF"},"pc":"SO45 1XA"},"WP031":{"lat":50.351229,"lng":-3.580855,"hours":{"mon":"8:30AM -1PM, 2PM - 6PM","tue":"8:30AM -1PM, 2PM - 6PM","wed":"8:30AM -1PM, 2PM - 6PM","thu":"8:30AM -1PM, 2PM - 6PM","fri":"8:30AM -1PM, 2PM - 6PM","sat":"8:30AM - 1PM","sun":"OFF"},"pc":"TQ6 9RT"},"WP032":{"lat":50.629043,"lng":-3.400701,"hours":{"mon":"8:30AM - 1PM, 2PM - 5.30PM","tue":"8:30AM - 1PM, 2PM - 5.30PM","wed":"8:30AM - 1PM, 2PM - 5.30PM","thu":"8:30AM - 1PM, 2PM - 5.30PM","fri":"8:30AM - 1PM, 2PM - 5.30PM","sat":"OFF","sun":"OFF"},"pc":"EX8 3AN"},"WP033":{"lat":50.346764,"lng":-3.603421,"hours":{"mon":"9AM - 1PM, 2PM - 6PM","tue":"9AM - 1PM, 2PM - 6PM","wed":"9AM - 1PM, 2PM - 6PM","thu":"9AM - 1PM, 2PM - 6PM","fri":"9AM - 1PM, 2PM - 6PM","sat":"OFF","sun":"OFF"},"pc":"TQ6 0JL"},"WP034":{"lat":52.332496,"lng":0.338059,"hours":{"mon":"9AM - 5:30PM","tue":"9AM - 5:30PM","wed":"9AM - 5:30PM","thu":"9AM - 5:30PM","fri":"9AM - 5:30PM","sat":"9AM - 5:30PM","sun":"OFF"},"pc":"CB7 5HA"},"WP035":{"lat":51.061735,"lng":-1.310421,"hours":{"mon":"8:45am–5:30pm","tue":"9am–5.30pm","wed":"8:45am–5:30pm","thu":"8:45am–5:30pm","fri":"8:45am–5:30pm","sat":"9AM - 5:30PM","sun":"OFF"},"pc":"SO23 9BA"},"WP036":{"lat":51.306401,"lng":-0.899995,"hours":{"mon":"9AM - 7PM","tue":"9AM - 7PM","wed":"9AM - 7PM","thu":"9AM - 7PM","fri":"9AM - 7PM","sat":"9AM - 5:30PM","sun":"OFF"},"pc":"RG27 8NS"},"WP037":{"lat":52.666144,"lng":0.940717,"hours":{"mon":"9AM - 1PM, 2PM - 6PM","tue":"9AM - 1PM, 2PM - 6PM","wed":"9AM - 1PM, 2PM - 6PM","thu":"9AM - 1PM, 2PM - 6PM","fri":"9AM - 1PM, 2PM - 6PM","sat":"9AM - 1PM","sun":"OFF"},"pc":"NR19 1LD"},"WP038":{"lat":52.33425,"lng":-0.188253,"hours":{"mon":"8:30AM - 6PM","tue":"8:30AM - 6PM","wed":"8:30AM - 6PM","thu":"8:30AM - 6PM","fri":"8:30AM - 6PM","sat":"9AM - 1PM","sun":"OFF"},"pc":"PE29 3EZ"},"WP039":{"lat":50.545937,"lng":-3.49588,"hours":{"mon":"9am-1.30pm, 2pm-5.30pm","tue":"9am-1.30pm, 2pm-5.30pm","wed":"9am-1.30pm, 2pm-5.30pm","thu":"9am-1.30pm, 2pm-5.30pm","fri":"9am-1.30pm, 2pm-5.30pm","sat":"9am-1pm, 2pm–5.30pm","sun":"OFF"},"pc":"TQ14 8AJ"},"WP040":{"lat":52.45744,"lng":0.051873,"hours":{"mon":"9AM - 7PM","tue":"9AM - 7PM","wed":"9AM - 7PM","thu":"9AM - 7PM","fri":"9AM - 7PM","sat":"OFF","sun":"OFF"},"pc":"PE16 6EX"},"WP041":{"lat":52.058079,"lng":1.229868,"hours":{"mon":"9AM - 6PM","tue":"9AM - 6PM","wed":"9AM - 6PM","thu":"9AM - 6PM","fri":"9AM - 6PM","sat":"OFF","sun":"OFF"},"pc":"IP5 1JS"},"WP042":{"lat":51.269397,"lng":-0.840344,"hours":{"mon":"9am–1pm, 2–5:30pm","tue":"9am–1pm, 2–5:30pm","wed":"9am–1pm, 2–5:30pm","thu":"9am–1pm, 2–5:30pm","fri":"9am–1pm, 2–5:30pm","sat":"9AM - 12PM","sun":"OFF"},"pc":"GU52 7UL"},"WP043":{"lat":52.057271,"lng":1.161864,"hours":{"mon":"8:45AM - 6.30PM","tue":"8:45AM - 6.30PM","wed":"8:45AM - 6.30PM","thu":"8:45AM - 6.30PM","fri":"8:45AM - 6.30PM","sat":"OFF","sun":"OFF"},"pc":"IP4 2PU"},"WP045":{"lat":52.728741,"lng":1.35743,"hours":{"mon":"9AM - 12PM, 1PM - 6PM","tue":"9AM - 12PM, 1PM - 6PM","wed":"9AM - 12PM, 1PM - 6PM","thu":"9AM - 12PM, 1PM - 6PM","fri":"9AM - 12PM, 1PM - 6PM","sat":"OFF","sun":"OFF"},"pc":"NR12 7AA"},"WP046":{"lat":52.376411,"lng":1.108694,"hours":{"mon":"9AM - 6PM","tue":"9AM - 6PM","wed":"9AM - 6PM","thu":"9AM - 6PM","fri":"9AM - 6PM","sat":"9AM - 5PM","sun":"OFF"},"pc":"IP22 4AB"},"WP047":{"lat":52.229406,"lng":-0.265254,"hours":{"mon":"9AM - 1PM, 2PM - 6PM","tue":"9AM - 1PM, 2PM - 6PM","wed":"9AM - 1PM, 2PM - 6PM","thu":"9AM - 1PM, 2PM - 6PM","fri":"9AM - 1PM, 2PM - 6PM","sat":"OFF","sun":"OFF"},"pc":"PE19 1BQ"},"WP048":{"lat":52.072013,"lng":1.132884,"hours":{"mon":"9am–1pm, 2–6pm","tue":"9am–1pm, 2–6pm","wed":"9am–1pm, 2–6pm","thu":"9am–1pm, 2–6pm","fri":"9am–1pm, 2–6pm","sat":"OFF","sun":"OFF"},"pc":"IP1 5DX"},"WP049":{"lat":50.746361,"lng":-3.416305,"hours":{"mon":"9am–1pm, 2–6pm","tue":"9am–1pm, 2–6pm","wed":"9am–1pm, 2–6pm","thu":"9am–1pm, 2–6pm","fri":"9am–1pm, 2–6pm","sat":"9AM - 1PM","sun":"OFF"},"pc":"EX5 7DR"},"WP050":{"lat":53.082351,"lng":-1.372601,"hours":{"mon":"8:30AM - 6:30PM","tue":"8:30AM - 6:30PM","wed":"8:30AM - 6:30PM","thu":"8:30AM - 6:30PM","fri":"8:30AM - 6:30PM","sat":"OFF","sun":"OFF"},"pc":"DE55 4JJ"},"WP051":{"lat":52.643426,"lng":1.335453,"hours":{"mon":"9AM - 6PM","tue":"9AM - 6PM","wed":"9AM - 6PM","thu":"9AM - 6PM","fri":"9AM - 6PM","sat":"9AM - 1PM","sun":"OFF"},"pc":"NR7 9RJ"},"WP052":{"lat":50.282816,"lng":-3.777746,"hours":{"mon":"8:45 am - 5:30 pm","tue":"8:45 am - 5:30 pm","wed":"8:45 am - 5:30 pm","thu":"8:45 am - 5:30 pm","fri":"8:45 am - 5:30 pm","sat":"9AM - 1PM","sun":"OFF"},"pc":"TQ7 1EB"},"WP053":{"lat":50.371527,"lng":-4.153417,"hours":{"mon":"9am - 6pm","tue":"9am - 6pm","wed":"9am - 6pm","thu":"9am - 6pm","fri":"9am - 6pm","sat":"OFF","sun":"OFF"},"pc":"PL1 5JA"},"WP055":{"lat":51.109987,"lng":-0.628425,"hours":{"mon":"9am - 6pm","tue":"9am - 6pm","wed":"9am - 6pm","thu":"9am - 6pm","fri":"9am - 6pm","sat":"9am - 5pm","sun":"OFF"},"pc":"GU8 4TU"},"WP056":{"lat":52.221805,"lng":1.344228,"hours":{"mon":"9am - 6pm","tue":"9am - 6pm","wed":"9am - 6pm","thu":"9am - 6pm","fri":"9am - 6pm","sat":"9am - 5pm","sun":"OFF"},"pc":"IP13 9AY"},"WP058":{"lat":50.947546,"lng":-2.515419,"hours":{"mon":"9am - 5.30pm","tue":"9am - 5.30pm","wed":"9am - 5.30pm","thu":"9am - 5.30pm","fri":"9am - 5.30pm","sat":"9am - 1pm","sun":"OFF"},"pc":"DT9 3BA"},"WP060":{"lat":52.32069,"lng":1.146218,"hours":{"mon":"9am - 1pm ; 2pm - 6pm","tue":"9am - 1pm ; 2pm - 5.30pm","wed":"9am - 1pm ; 2pm - 6pm","thu":"9am - 1pm ; 2pm - 5.30pm","fri":"9am - 1pm ; 2pm - 6pm","sat":"9am - 1pm","sun":"OFF"},"pc":"IP23 7AF"},"WP061":{"lat":52.225229,"lng":1.18079,"hours":{"mon":"9am - 1pm ; 2pm - 5.30pm","tue":"9am - 1pm ; 2pm - 5.30pm","wed":"9am - 1pm ; 2pm - 5.30pm","thu":"9am - 1pm ; 2pm - 5.30pm","fri":"9am - 1pm ; 2pm - 5.30pm","sat":"9am - 1pm","sun":"OFF"},"pc":"IP14 6RB"},"WP063":{"lat":52.871246,"lng":-1.090326,"hours":{"mon":"09:00 - 18:00","tue":"09:00 - 18:00","wed":"09:00 - 18:00","thu":"09:00 - 18:00","fri":"09:00 - 18:00","sat":"OFF","sun":"OFF"},"pc":"NG12 5JT"},"WP065":{"lat":52.477101,"lng":-0.92483,"hours":{"mon":"9am - 6pm","tue":"9am - 6pm","wed":"9am - 6pm","thu":"9am - 6pm","fri":"9am - 6pm","sat":"OFF","sun":"OFF"},"pc":"LE16 9BX"}};
 
 const STORAGE_KEY = 'wb-branding-trip-v1';
 const SHEET = {
@@ -697,6 +772,8 @@ let state = loadState();
 let activeTab = 'today'; // today | tomorrow | all
 let focusDate = null; // date shown in Today/Tomorrow panels
 let addStopDate = null; // day currently targeted by the Add stop modal
+let addStopFilter = 'open'; // open | all
+let addStopGeoAnchor = null; // {lat,lng} from geolocation when available
 let openDays = {}; // All-tab accordion open state
 
 function todayISO() {
@@ -1089,15 +1166,188 @@ function setTab(tab) {
   }
 }
 
+const DOW_KEYS = ['sun','mon','tue','wed','thu','fri','sat'];
+const DOW_SHORT = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+
+function londonNowParts() {
+  const parts = new Intl.DateTimeFormat('en-GB', {
+    timeZone: 'Europe/London', weekday: 'short', hour: '2-digit', minute: '2-digit',
+    hourCycle: 'h23'
+  }).formatToParts(new Date());
+  const map = {};
+  for (const p of parts) if (p.type !== 'literal') map[p.type] = p.value;
+  const wd = (map.weekday || '').slice(0, 3);
+  const idx = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].indexOf(wd);
+  return {
+    dowKey: idx >= 0 ? DOW_KEYS[idx] : DOW_KEYS[new Date().getDay()],
+    dowShort: idx >= 0 ? DOW_SHORT[idx] : DOW_SHORT[new Date().getDay()],
+    minutes: (parseInt(map.hour, 10) || 0) * 60 + (parseInt(map.minute, 10) || 0)
+  };
+}
+
+function parseClockToken(tok) {
+  if (!tok) return null;
+  let s = String(tok).trim().toLowerCase().replace(/\s+/g, '');
+  s = s.replace(/[.–—]/g, ':');
+  const am = /am$/.test(s);
+  const pm = /pm$/.test(s);
+  s = s.replace(/(am|pm)$/, '');
+  let h, m;
+  if (s.includes(':')) {
+    const [a, b] = s.split(':');
+    h = parseInt(a, 10); m = parseInt(b || '0', 10);
+  } else if (s.includes('.')) {
+    const [a, b] = s.split('.');
+    h = parseInt(a, 10); m = parseInt(b || '0', 10);
+    if ((b || '').length === 1) m = m * 10;
+  } else {
+    h = parseInt(s, 10); m = 0;
+  }
+  if (!Number.isFinite(h) || !Number.isFinite(m)) return null;
+  if (pm && h < 12) h += 12;
+  if (am && h === 12) h = 0;
+  if (!am && !pm && h >= 24) return null;
+  return h * 60 + m;
+}
+
+function parseHoursRanges(raw) {
+  if (raw == null) return null;
+  let s = String(raw).trim();
+  if (!s || /^off$/i.test(s) || /^closed$/i.test(s)) return [];
+  s = s.replace(/[;|]/g, ',').replace(/–|—/g, '-');
+  const parts = s.split(',').map(x => x.trim()).filter(Boolean);
+  const ranges = [];
+  for (const part of parts) {
+    const m = part.match(/^(.+?)\s*-\s*(.+)$/);
+    if (!m) continue;
+    let startTok = m[1].trim();
+    let endTok = m[2].trim();
+    // bare hour on end like "2–6pm" — inherit am/pm from end if start lacks it
+    if (!/(am|pm)$/i.test(startTok) && /(am|pm)$/i.test(endTok) && !/[:.]/.test(startTok)) {
+      // keep as-is; parseClockToken handles number-only as 24h-ish — fix: if end is pm and start < 12 assume same meridian only when start has no meridian and looks like hour
+      const endIsPm = /pm$/i.test(endTok);
+      const endIsAm = /am$/i.test(endTok);
+      const sn = parseFloat(startTok);
+      if (Number.isFinite(sn) && sn <= 12) {
+        if (endIsPm && sn !== 12) startTok = startTok + 'pm';
+        else if (endIsAm) startTok = startTok + 'am';
+      }
+    }
+    const a = parseClockToken(startTok);
+    const b = parseClockToken(endTok);
+    if (a == null || b == null) continue;
+    ranges.push({ start: a, end: b });
+  }
+  return ranges;
+}
+
+function formatHoursDisplay(raw, dowShort) {
+  if (raw == null || String(raw).trim() === '') return 'Hours n/a';
+  const s = String(raw).trim();
+  if (/^off$/i.test(s) || /^closed$/i.test(s)) return 'Closed today';
+  // normalize dashes for display
+  const nice = s.replace(/\s*-\s*/g, '–').replace(/–+/g, '–');
+  return dowShort + ' ' + nice;
+}
+
+function opennessForCode(code, nowParts) {
+  const meta = BRANCH_META[code];
+  if (!meta || !meta.hours) {
+    return { kind: 'unknown', label: 'Hours n/a', pill: 'Hours n/a', ranges: null, opensLater: false };
+  }
+  const raw = meta.hours[nowParts.dowKey];
+  const ranges = parseHoursRanges(raw);
+  const hoursLine = formatHoursDisplay(raw, nowParts.dowShort);
+  if (ranges === null) {
+    return { kind: 'unknown', label: hoursLine, pill: 'Hours n/a', ranges: null, opensLater: false };
+  }
+  if (!ranges.length) {
+    return { kind: 'closed', label: 'Closed today', pill: 'Closed', ranges, opensLater: false };
+  }
+  const now = nowParts.minutes;
+  const openNow = ranges.some(r => now >= r.start && now < r.end);
+  if (openNow) {
+    return { kind: 'open', label: hoursLine, pill: 'Open', ranges, opensLater: false };
+  }
+  const opensLater = ranges.some(r => now < r.start);
+  return { kind: 'closed', label: hoursLine, pill: 'Closed', ranges, opensLater };
+}
+
+function haversineMiles(a, b) {
+  if (!a || !b || a.lat == null || b.lat == null || a.lng == null || b.lng == null) return null;
+  const R = 3958.7613;
+  const toRad = d => d * Math.PI / 180;
+  const dLat = toRad(b.lat - a.lat);
+  const dLng = toRad(b.lng - a.lng);
+  const lat1 = toRad(a.lat), lat2 = toRad(b.lat);
+  const h = Math.sin(dLat/2)**2 + Math.cos(lat1)*Math.cos(lat2)*Math.sin(dLng/2)**2;
+  return 2 * R * Math.asin(Math.min(1, Math.sqrt(h)));
+}
+
+function avgLatLng(branches) {
+  let n = 0, lat = 0, lng = 0;
+  for (const b of branches || []) {
+    const m = BRANCH_META[b.code];
+    if (!m || m.lat == null || m.lng == null) continue;
+    lat += m.lat; lng += m.lng; n++;
+  }
+  if (!n) return null;
+  return { lat: lat / n, lng: lng / n };
+}
+
+function dayAverageAnchor(day) {
+  if (!day) return null;
+  const onDay = avgLatLng(branchesForDay(day));
+  if (onDay) return onDay;
+  const idx = TRIP_DATA.days.findIndex(d => d.date === day.date);
+  for (let i = idx + 1; i < TRIP_DATA.days.length; i++) {
+    const a = avgLatLng(branchesForDay(TRIP_DATA.days[i]));
+    if (a) return a;
+  }
+  for (let i = idx - 1; i >= 0; i--) {
+    const a = avgLatLng(branchesForDay(TRIP_DATA.days[i]));
+    if (a) return a;
+  }
+  return null;
+}
+
+function resolveAddStopAnchor(day) {
+  if (addStopGeoAnchor && addStopGeoAnchor.lat != null) return addStopGeoAnchor;
+  return dayAverageAnchor(day);
+}
+
+function requestAddStopGeolocation() {
+  if (!navigator.geolocation) return;
+  navigator.geolocation.getCurrentPosition(
+    (pos) => {
+      addStopGeoAnchor = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+      if (document.getElementById('addStopModal').classList.contains('show')) renderAddStopList();
+    },
+    () => { /* denied or unavailable — keep day average */ },
+    { enableHighAccuracy: false, maximumAge: 120000, timeout: 8000 }
+  );
+}
+
+function opennessSortRank(open) {
+  if (open.kind === 'open') return 0;
+  if (open.kind === 'closed' && open.opensLater) return 1;
+  if (open.kind === 'closed') return 2;
+  return 3;
+}
+
 function renderAddStopList() {
   const list = document.getElementById('addStopList');
+  const note = document.getElementById('addStopNote');
   const day = addStopDate ? findDay(addStopDate) : null;
   const query = (document.getElementById('addStopSearch').value || '').trim().toLowerCase();
   if (!day) {
     list.innerHTML = '<div class="add-stop-empty">No day selected.</div>';
+    if (note) { note.hidden = true; note.textContent = ''; }
     return;
   }
   const shown = new Set(branchesForDay(day).map(b => b.code));
+  const nowParts = londonNowParts();
+  const anchor = resolveAddStopAnchor(day);
   const candidates = [];
   for (const homeDay of TRIP_DATA.days) {
     for (const branch of homeDay.branches) {
@@ -1105,19 +1355,55 @@ function renderAddStopList() {
       if (getBranchState(homeDay.date, branch.code).status !== 'pending') continue;
       const haystack = (branch.name + ' ' + branch.code + ' ' + homeDay.label).toLowerCase();
       if (query && !haystack.includes(query)) continue;
-      candidates.push({ day: homeDay, branch });
+      const open = opennessForCode(branch.code, nowParts);
+      const meta = BRANCH_META[branch.code];
+      const dist = meta ? haversineMiles(anchor, meta) : null;
+      candidates.push({ day: homeDay, branch, open, dist });
     }
   }
-  candidates.sort((a, b) => a.day.date.localeCompare(b.day.date) || a.branch.name.localeCompare(b.branch.name));
-  if (!candidates.length) {
-    list.innerHTML = '<div class="add-stop-empty">No pending branches match.</div>';
+  candidates.sort((a, b) => {
+    const ra = opennessSortRank(a.open), rb = opennessSortRank(b.open);
+    if (ra !== rb) return ra - rb;
+    const da = a.dist == null ? Infinity : a.dist;
+    const db = b.dist == null ? Infinity : b.dist;
+    if (da !== db) return da - db;
+    return a.day.date.localeCompare(b.day.date) || a.branch.name.localeCompare(b.branch.name);
+  });
+  const closedCount = candidates.filter(c => c.open.kind === 'closed' && !c.open.opensLater).length;
+  const unknownCount = candidates.filter(c => c.open.kind === 'unknown').length;
+  let shownList = candidates;
+  if (addStopFilter === 'open') {
+    // Open now + opens later today; hide closed-today and unknown.
+    shownList = candidates.filter(c => c.open.kind === 'open' || (c.open.kind === 'closed' && c.open.opensLater));
+  }
+  const hiddenClosed = addStopFilter === 'open' ? (closedCount + unknownCount) : 0;
+  if (note) {
+    if (addStopFilter === 'open' && hiddenClosed > 0) {
+      note.hidden = false;
+      note.textContent = hiddenClosed + ' closed hidden';
+    } else {
+      note.hidden = true;
+      note.textContent = '';
+    }
+  }
+  if (!shownList.length) {
+    list.innerHTML = '<div class="add-stop-empty">' +
+      (candidates.length && addStopFilter === 'open'
+        ? 'No open pending branches nearby. Try All pending.'
+        : 'No pending branches match.') + '</div>';
     return;
   }
-  list.innerHTML = candidates.map(({ day: homeDay, branch }) => `
+  list.innerHTML = shownList.map(({ day: homeDay, branch, open, dist }) => {
+    const pillClass = open.kind === 'open' ? 'open' : (open.kind === 'closed' ? 'closed' : 'na');
+    const distTxt = dist == null ? '' : (' · ~' + (dist < 10 ? dist.toFixed(1) : Math.round(dist)) + ' mi');
+    const sub = open.label + distTxt + ' · Planned ' + homeDay.label;
+    return `
     <button type="button" class="add-stop-row" data-add-code="${escapeAttr(branch.code)}">
       <span class="add-stop-row-top"><span class="add-stop-row-name">${escapeHtml(branch.name)}</span><span class="add-stop-row-code">${escapeHtml(branch.code)}</span></span>
-      <span class="add-stop-row-day">Planned ${escapeHtml(homeDay.label)}</span>
-    </button>`).join('');
+      <span class="add-stop-row-meta"><span class="add-stop-open-pill ${pillClass}">${escapeHtml(open.pill)}</span></span>
+      <span class="add-stop-row-sub">${escapeHtml(sub)}</span>
+    </button>`;
+  }).join('');
   list.querySelectorAll('[data-add-code]').forEach(row => {
     row.addEventListener('click', () => addStopToDay(addStopDate, row.dataset.addCode));
   });
@@ -1125,11 +1411,19 @@ function renderAddStopList() {
 
 function openAddStopModal(day) {
   addStopDate = day && day.date;
+  addStopFilter = 'open';
+  addStopGeoAnchor = null;
   const modal = document.getElementById('addStopModal');
-  document.getElementById('addStopHint').textContent = day ? `Choose a pending branch to add to ${day.label}.` : 'Choose a pending branch to add to this day.';
+  document.getElementById('addStopHint').textContent = day
+    ? ('Suggesting nearby open branches for ' + day.label + '.')
+    : 'Choose a pending branch to add to this day.';
   document.getElementById('addStopSearch').value = '';
+  document.querySelectorAll('#addStopFilter [data-filter]').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.filter === addStopFilter);
+  });
   renderAddStopList();
   modal.classList.add('show');
+  requestAddStopGeolocation();
   setTimeout(() => document.getElementById('addStopSearch').focus(), 0);
 }
 
@@ -1360,6 +1654,15 @@ document.getElementById('addStopModal').addEventListener('click', (e) => {
   if (e.target.id === 'addStopModal') e.target.classList.remove('show');
 });
 document.getElementById('addStopSearch').addEventListener('input', renderAddStopList);
+document.getElementById('addStopFilter').addEventListener('click', (e) => {
+  const btn = e.target.closest('[data-filter]');
+  if (!btn) return;
+  addStopFilter = btn.dataset.filter === 'all' ? 'all' : 'open';
+  document.querySelectorAll('#addStopFilter [data-filter]').forEach(b => {
+    b.classList.toggle('active', b.dataset.filter === addStopFilter);
+  });
+  renderAddStopList();
+});
 document.getElementById('btnJumpAll').addEventListener('click', () => {
   document.getElementById('moreModal').classList.remove('show');
   setTab('all');
